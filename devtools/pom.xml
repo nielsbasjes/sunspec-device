@@ -27,7 +27,7 @@
 
   <artifactId>sunspec-schema-devtools</artifactId>
 
-  <name>SunSpec Schema Device : Dev tools</name>
+  <name>SunSpec Device : Dev tools</name>
 
   <build>
     <plugins>

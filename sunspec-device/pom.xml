@@ -13,7 +13,7 @@
 
   <artifactId>sunspec-device</artifactId>
 
-  <name>SunSpec Schema Device : Schema Device</name>
+  <name>SunSpec Device : Schema Device</name>
   <description>The SunSpec modbus schema</description>
   <url>https://github.com/nielsbasjes/modbus-schema</url>
 

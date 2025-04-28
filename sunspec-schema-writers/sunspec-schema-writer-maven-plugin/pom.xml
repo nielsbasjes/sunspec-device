@@ -12,7 +12,7 @@
   <artifactId>sunspec-schema-writer-maven-plugin</artifactId>
 
   <packaging>maven-plugin</packaging>
-  <name>SunSpec Schema Device : Writers : Maven Plugin</name>
+  <name>SunSpec Device : Writers : Maven Plugin</name>
 
   <dependencies>
 

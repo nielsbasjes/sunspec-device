@@ -11,7 +11,7 @@
   <artifactId>sunspec-device-schema-writers</artifactId>
 
   <packaging>pom</packaging>
-  <name>SunSpec Schema Device : Writers : </name>
+  <name>SunSpec Device : Writers : </name>
 
   <modules>
     <module>sunspec-schema-writer-maven-plugin</module>

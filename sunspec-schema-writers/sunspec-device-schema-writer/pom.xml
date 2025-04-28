@@ -12,7 +12,7 @@
   <artifactId>sunspec-device-schema-writer</artifactId>
 
   <packaging>jar</packaging>
-  <name>SunSpec Schema Device : Writers : Commandline</name>
+  <name>SunSpec Device : Writers : Commandline</name>
 
   <properties>
     <mainClass>nl.basjes.sunspec.schema.generate.Main</mainClass>
