@@ -83,24 +83,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.yaml</groupId>
-        <artifactId>snakeyaml</artifactId>
-        <version>2.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-runtime</artifactId>
-        <version>[${antlr.version}]</version> <!-- PIN to exact version -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.plc4x</groupId>
-        <artifactId>plc4j-driver-modbus</artifactId>
-        <version>${plc4j.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-stdlib</artifactId>
         <version>${kotlin.version}</version>
