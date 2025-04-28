@@ -40,7 +40,7 @@
 
     <junit5.version>5.12.2</junit5.version>
 
-    <antlr.version>4.13.1</antlr.version>
+    <antlr.version>4.13.2</antlr.version>
 
     <plc4j.version>0.12.0</plc4j.version>
 
