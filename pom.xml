@@ -1,0 +1,207 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>nl.basjes.sunspec</groupId>
+  <artifactId>sunspec-device-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+  <name>SunSpec Schema Device : </name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+
+    <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
+    <project.build.outputTimestamp>2001-01-01T01:01:01Z</project.build.outputTimestamp>
+
+    <java.version>17</java.version>
+    <kotlin.version>2.1.0</kotlin.version>
+
+    <!-- Tell IntelliJ which JDK to use -->
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <!--    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>-->
+
+    <maven-artifact-plugin.version>3.6.0</maven-artifact-plugin.version>
+    <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
+    <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
+    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
+    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+
+    <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
+
+    <maven-plugin-api.version>3.9.9</maven-plugin-api.version>
+    <maven-plugin-plugin.version>3.15.1</maven-plugin-plugin.version>
+
+    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+
+    <junit5.version>5.12.2</junit5.version>
+
+    <antlr.version>4.13.1</antlr.version>
+
+    <plc4j.version>0.12.0</plc4j.version>
+
+    <modbus-schema.version>0.0.1-SNAPSHOT</modbus-schema.version>
+
+    <!-- ========================================== -->
+    <!-- ========== SunSpec Version info ========== -->
+    <!-- The version of the release -->
+    <sunspec-model.version>v2024-11-15</sunspec-model.version>
+    <!-- The directory IN the release under which the files are located -->
+    <sunspec-model-basedir>models-2024-11-15</sunspec-model-basedir>
+    <!-- ========================================== -->
+  </properties>
+
+  <dependencyManagement>
+
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit5.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-bom</artifactId>
+        <version>2.24.3</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>nl.basjes.modbus</groupId>
+        <artifactId>modbus-schema-bom</artifactId>
+        <version>${modbus-schema.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>2.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-runtime</artifactId>
+        <version>[${antlr.version}]</version> <!-- PIN to exact version -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.plc4x</groupId>
+        <artifactId>plc4j-driver-modbus</artifactId>
+        <version>${plc4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-stdlib</artifactId>
+        <version>${kotlin.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-test-junit5</artifactId>
+        <version>${kotlin.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven-clean-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.11.0</version>
+          <configuration>
+            <showWarnings>true</showWarnings>
+            <showDeprecation>true</showDeprecation>
+            <compilerArgs>
+              <!-- Enable almost all warnings.-->
+              <arg>-Xlint:all</arg>
+              <!-- Ignore the 'serial' warnings about not having a serialVersionUID -->
+              <arg>-Xlint:-serial</arg>
+              <!-- Silence warning "No processor claimed any of these annotations" -->
+              <arg>-Xlint:-processing</arg>
+              <!-- Fail on ANY warning -->
+              <arg>-Werror</arg>
+              <arg>-implicit:class</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <failIfNoTests>true</failIfNoTests>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jvmTarget>${maven.compiler.release}</jvmTarget>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+  <modules>
+    <module>devtools</module>
+    <module>sunspec-model</module>
+    <module>sunspec-device</module>
+    <module>sunspec-schema-writers</module>
+  </modules>
+
+</project>

@@ -1,0 +1,258 @@
+<?xml version="1.0"?>
+
+<project
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>nl.basjes.sunspec</groupId>
+    <artifactId>sunspec-device-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>sunspec-model</artifactId>
+
+  <name>SunSpec Schema Device : SunSpec models</name>
+  <description>The SunSpec modbus specification</description>
+  <url>https://github.com/nielsbasjes/modbus-schema</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jetbrains.kotlinx</groupId>
+      <artifactId>kotlinx-serialization-json</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.optimumcode</groupId>
+      <artifactId>json-schema-validator-jvm</artifactId>
+      <version>0.5.1</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>Download Sunspec model specification</id>
+      <activation>
+        <file>
+          <missing>target/downloaded/sunspec-model-${sunspec-model.version}.jar</missing>
+        </file>
+      </activation>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.googlecode.maven-download-plugin</groupId>
+            <artifactId>download-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <executions>
+              <execution>
+                <id>Download Sunspec model specification</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>wget</goal>
+                </goals>
+                <configuration>
+                  <url>https://codeload.github.com/sunspec/models/zip/refs/tags/${sunspec-model.version}</url>
+                  <outputDirectory>target/downloaded/</outputDirectory>
+                  <outputFileName>sunspec-model-${sunspec-model.version}.jar</outputFileName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <build>
+    <defaultGoal>clean package</defaultGoal>
+
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>target/generated-resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${exec-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>Extract the SunSpec JSON files</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>target/generated-resources/SunSpec/</workingDirectory>
+              <executable>jar</executable>
+              <arguments>
+                <argument>-x</argument>
+                <argument>--file</argument>
+                <argument>../../downloaded/sunspec-model-${sunspec-model.version}.jar</argument>
+                <argument>${sunspec-model-basedir}/LICENSE</argument>
+                <argument>${sunspec-model-basedir}/README.md</argument>
+                <argument>${sunspec-model-basedir}/json/schema</argument>
+                <argument>${sunspec-model-basedir}/json/model</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>Find SunSpec model files</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <fileset id="sunspecModelFiles" dir="target/generated-resources/SunSpec/${sunspec-model-basedir}/" />
+                <pathconvert targetos="unix" pathsep="&quot;,&#xD;    &quot;" property="sunspec-file-list" refid="sunspecModelFiles">
+                  <map from="${project.basedir}/target/generated-resources/SunSpec/${sunspec-model-basedir}/" to="SunSpec/${sunspec-model-basedir}/" />
+                </pathconvert>
+                <!--suppress MavenModelInspection -->
+                <echo file="${project.basedir}/target/temp-sunspec-file-list.txt">${sunspec-file-list}</echo>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+      <groupId>com.google.code.maven-replacer-plugin</groupId>
+      <artifactId>replacer</artifactId>
+      <version>1.5.3</version>
+      <executions>
+      <execution>
+        <id>Generate Java class with Sunspec Model files</id>
+        <phase>generate-sources</phase>
+        <goals>
+          <goal>replace</goal>
+        </goals>
+        <configuration>
+          <file>${project.basedir}/src/main/code-gen/SunSpecModelFiles.kt.template</file>
+          <regex>false</regex>
+          <outputFile>${project.basedir}/target/generated-sources/kotlin/nl/basjes/sunspec/SunSpecModelFiles.kt</outputFile>
+        </configuration>
+      </execution>
+      </executions>
+        <configuration>
+        <replacements>
+          <replacement>
+            <token>###model-list###</token>
+            <valueFile>${project.basedir}/target/temp-sunspec-file-list.txt</valueFile>
+          </replacement>
+        </replacements>
+        </configuration>
+
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/kotlin/</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <compilerPlugins>
+            <plugin>kotlinx-serialization</plugin>
+          </compilerPlugins>
+          <jvmTarget>${java.version}</jvmTarget>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-serialization</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+</project>

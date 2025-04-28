@@ -1,0 +1,160 @@
+id: 'TestDevice'
+description: 'Fake Device that uses all possible expressions'
+schemaFeatureLevel: 1
+blocks:
+  - id: 'Main'
+    name: 'The only block of registers'
+    fields:
+      - id: 'Float'
+        name: 'A Float 32'
+        expression: 'ieee754_32(hr:00000 # 2)'
+        unit: 'Foo'
+
+      - id: 'Double'
+        name: 'A Float 64'
+        expression: 'ieee754_64(hr:00002 # 4)'
+        unit: 'Bar'
+
+      - id: 'Enum'
+        name: 'Enum'
+        expression: "enum(hr:0 ; 0-> 'Off'; 1->'Manual'; 2-> 'Automatic')"
+
+      - id: 'EUI48'
+        name: 'EUI48'
+        expression: "eui48(hr:0#3 )"
+
+      - id: 'Short'
+        name: 'Int 16'
+        expression: "int16(hr:0)"
+
+      - id: 'UnsignedShort'
+        name: 'Unsigned Int 16'
+        expression: "uint16(hr:0)"
+
+      - id: 'Integer'
+        name: 'Int 32'
+        expression: "int32(hr:0#2)"
+
+      - id: 'UnsignedInteger'
+        name: 'Unsigned Int 32'
+        expression: "uint32(hr:0#2)"
+
+      - id: 'Long'
+        name: 'Int 64'
+        expression: "int64(hr:0#4)"
+
+      - id: 'UnsignedLong'
+        name: 'Unsigned Int 64'
+        expression: "uint64(hr:0#4)"
+
+      - id: 'IPv4'
+        name: 'IPv4'
+        expression: "ipv4addr(hr:0#2)"
+
+      - id: 'IPv6'
+        name: 'IPv6'
+        expression: 'ipv6addr(hr:0#8)'
+
+
+tests:
+  - id: 'Float: Normal values'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 449A 5225 4093 4A45 84FC D47C
+    blocks:
+      - id: 'Main'
+        expected:
+          Float      : '1234.567'
+          Double     : '1234.568' # 1234.56789012
+
+  - id: 'Enum: Normal values'
+    description: 'Normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0001
+    blocks:
+      - id: 'Main'
+        expected:
+          Enum     : 'Manual'
+
+  - id: 'EUI48: Normal values'
+    description: 'Test with normal values'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 0102 0304 0506 0708
+    blocks:
+      - id: 'Main'
+        expected:
+          EUI48     : '01:02:03:04:05:06'
+
+  - id: 'Integer 16 bits: Normal Value (Positive)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 3039
+    blocks:
+      - id: 'Main'
+        expected:
+          Short                                   : [ 12345 ]
+          UnsignedShort                           : [ 12345 ]
+
+  - id: 'Integer 16 bits: Normal value (Negative)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: CFC7
+    blocks:
+      - id: 'Main'
+        expected:
+          Short                                   : [ -12345 ]
+          UnsignedShort                           : [  53191 ]
+
+  # ===================================================================================================
+
+  - id: 'Integer 32 bits: Normal value (Positive)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 4996 02D2
+    blocks:
+      - id: 'Main'
+        expected:
+          Integer                                   : [ 1234567890 ]
+          UnsignedInteger                           : [ 1234567890 ]
+
+
+  - id: 'Integer 32 bits: Normal value (Negative)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: B669 FD2E
+    blocks:
+      - id: 'Main'
+        expected:
+          Integer                                   : [ -1234567890 ]
+          UnsignedInteger                           : [  3060399406 ]
+
+
+  # ===================================================================================================
+
+  - id: 'Integer 64 bits: Normal value (Positive)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: 1122 10F4 7DE9 8115
+    blocks:
+      - id: 'Main'
+        expected:
+          Long                                   : [ 1234567890123456789 ]
+          UnsignedLong                           : [ 1234567890123456789 ]
+
+  # Known problem; There is no unsigned 64 bit int in Java, so this is really an unsigned 63 bit int.
+  # Any value that is a negative int64 is always an impossible value for an uint64.
+  # If you get too big then I made it to simply fail.
+
+  - id: 'Integer 64 bits: Normal value (Negative)'
+    input:
+      - firstRegisterAddress: 'hr:0'
+        registers: EEDD EF0B 8216 7EEB
+    blocks:
+      - id: 'Main'
+        expected:
+          Long                                   : [ -1234567890123456789 ]
+          UnsignedLong                           : [] # Too large for unsigned 64 bit in JVM
+

@@ -1,0 +1,9 @@
+package nl.basjes.sunspec
+
+val ALL_SUNSPEC_FILES_LIST = listOf(
+    "###model-list###"
+)
+
+val SUNSPEC_MODEL_FILENAMES = ALL_SUNSPEC_FILES_LIST.filter { it.contains("json/model_") }
+
+val SUNSPEC_SCHEMA_FILENAME = ALL_SUNSPEC_FILES_LIST.first  { it.endsWith("json/schema.json") }
