@@ -321,6 +321,17 @@
           <version>${build-helper-maven-plugin.version}</version>
         </plugin>
 
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-artifact-plugin</artifactId>
+          <version>${maven-artifact-plugin.version}</version>
+          <configuration>
+            <skipModules>
+              <skipModule>nl.basjes.sunspec/devtools</skipModule>
+            </skipModules>
+          </configuration>
+        </plugin>
+
       </plugins>
     </pluginManagement>
 
