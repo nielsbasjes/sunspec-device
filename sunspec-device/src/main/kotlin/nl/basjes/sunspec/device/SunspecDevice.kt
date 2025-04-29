@@ -1,3 +1,19 @@
+/*
+ * Modbus Schema Toolkit
+ * Copyright (C) 2019-2025 Niels Basjes
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package nl.basjes.sunspec.device
 
 import nl.basjes.modbus.device.api.Address
@@ -7,7 +23,6 @@ import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.ReturnType
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 import nl.basjes.modbus.schema.utils.StringTable
 import nl.basjes.sunspec.SUNSPEC_MODEL_ID_REGISTERS
@@ -17,6 +32,31 @@ import nl.basjes.sunspec.SUNS_HEADER_MODEL_ID
 import nl.basjes.sunspec.model.SunSpec
 import nl.basjes.sunspec.model.entities.Group
 import nl.basjes.sunspec.model.entities.Point
+import nl.basjes.sunspec.model.entities.Point.Type.INT_16
+import nl.basjes.sunspec.model.entities.Point.Type.INT_32
+import nl.basjes.sunspec.model.entities.Point.Type.INT_64
+import nl.basjes.sunspec.model.entities.Point.Type.PAD
+import nl.basjes.sunspec.model.entities.Point.Type.RAW_16
+import nl.basjes.sunspec.model.entities.Point.Type.SUNSSF
+import nl.basjes.sunspec.model.entities.Point.Type.UINT_16
+import nl.basjes.sunspec.model.entities.Point.Type.UINT_32
+import nl.basjes.sunspec.model.entities.Point.Type.UINT_64
+import nl.basjes.sunspec.model.entities.Point.Type.COUNT
+import nl.basjes.sunspec.model.entities.Point.Type.ACC_16
+import nl.basjes.sunspec.model.entities.Point.Type.ACC_32
+import nl.basjes.sunspec.model.entities.Point.Type.ACC_64
+import nl.basjes.sunspec.model.entities.Point.Type.FLOAT_32
+import nl.basjes.sunspec.model.entities.Point.Type.FLOAT_64
+import nl.basjes.sunspec.model.entities.Point.Type.STRING
+import nl.basjes.sunspec.model.entities.Point.Type.IPADDR
+import nl.basjes.sunspec.model.entities.Point.Type.IPV_6_ADDR
+import nl.basjes.sunspec.model.entities.Point.Type.EUI_48
+import nl.basjes.sunspec.model.entities.Point.Type.ENUM_16
+import nl.basjes.sunspec.model.entities.Point.Type.ENUM_32
+import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_16
+import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_32
+import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_64
+
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Instant
@@ -273,50 +313,46 @@ object SunspecDevice {
     private fun Point.getCamelCaseSfName() = if (scalingFactor== null) { null } else { convertToCodeCompliantName(scalingFactor!!, true) }
 
     private fun createAndAddFieldToModel(block: Block, modelBaseAddress: Address, point: Point, prefix: String): Field {
-        val outputType: ReturnType
         val functionName: String
         val additionalArguments: String
 
         val typeLoadingParameters: TypeMapping
         when (point.type) {
-            Point.Type.PAD,
-            Point.Type.SUNSSF,
-            Point.Type.INT_16,
-            Point.Type.INT_32,
-            Point.Type.INT_64,
-            Point.Type.RAW_16,
-            Point.Type.UINT_16,
-            Point.Type.UINT_32,
-            Point.Type.UINT_64,
-            Point.Type.COUNT,
-            Point.Type.ACC_16,
-            Point.Type.ACC_32,
-            Point.Type.ACC_64,
-            Point.Type.FLOAT_32,
-            Point.Type.FLOAT_64,
-            Point.Type.STRING,
-            Point.Type.IPADDR,
-            Point.Type.IPV_6_ADDR,
-            Point.Type.EUI_48 -> {
+            PAD,
+            SUNSSF,
+            INT_16,
+            INT_32,
+            INT_64,
+            RAW_16,
+            UINT_16,
+            UINT_32,
+            UINT_64,
+            COUNT,
+            ACC_16,
+            ACC_32,
+            ACC_64,
+            FLOAT_32,
+            FLOAT_64,
+            STRING,
+            IPADDR,
+            IPV_6_ADDR,
+            EUI_48 -> {
                 typeLoadingParameters = TYPE_MAPPINGS_NO_SYMBOLS[point.type]!!
-                outputType = typeLoadingParameters.returnType
                 functionName = typeLoadingParameters.functionName
                 additionalArguments = typeLoadingParameters.notImplemented
             }
 
-            Point.Type.BITFIELD_16,
-            Point.Type.BITFIELD_32,
-            Point.Type.BITFIELD_64,
-            Point.Type.ENUM_16,
-            Point.Type.ENUM_32 -> {
+            BITFIELD_16,
+            BITFIELD_32,
+            BITFIELD_64,
+            ENUM_16,
+            ENUM_32 -> {
                 if (point.symbols.isEmpty()) {
                     typeLoadingParameters = TYPE_MAPPINGS_NO_SYMBOLS[point.type]!!
-                    outputType = typeLoadingParameters.returnType
                     functionName = typeLoadingParameters.functionName
                     additionalArguments = typeLoadingParameters.notImplemented
                 } else {
                     typeLoadingParameters = TYPE_MAPPINGS_WITH_SYMBOLS[point.type]!!
-                    outputType = typeLoadingParameters.returnType
                     functionName = typeLoadingParameters.functionName
                     additionalArguments = typeLoadingParameters.notImplemented + mappingString(point)
                 }
@@ -328,7 +364,6 @@ object SunspecDevice {
                     modelBaseAddress, point.name, point.type
                 )
                 // Anything that we missed: Just dump it as a raw hex string
-                outputType = ReturnType.STRING
                 functionName = "hexstring"
                 additionalArguments = ""
             }
@@ -340,9 +375,8 @@ object SunspecDevice {
             .id(prefix + point.getCamelCaseName())
             .unit(point.units)
             .immutable(point.mutable == Point.Mutable.IMMUTABLE)
-//            .returnType(outputType)
 
-        if (point.type == Point.Type.SUNSSF) {
+        if (point.type == SUNSSF) {
             fieldBuilder.description("[${block.id}](${point.name}): Scaling factor")
         } else {
             val label: String
@@ -355,7 +389,7 @@ object SunspecDevice {
         }
 
         // Some fields are considered to be system fields (i.e. not directly usable applications fields)
-        if (point.type == Point.Type.SUNSSF || point.type == Point.Type.PAD ||
+        if (point.type == SUNSSF || point.type == PAD ||
             (point.isImmutable() && (point.name == "ID" || point.name == "L"))
         ) {
             fieldBuilder.system(true).immutable(true)
@@ -369,8 +403,6 @@ object SunspecDevice {
         val camelCaseSfName: String? = point.getCamelCaseSfName()
         if (!camelCaseSfName.isNullOrEmpty()) {
             expression += " * (10^$camelCaseSfName)"
-            // If there is an SF then the output type is usually a double
-//            fieldBuilder.returnType(ReturnType.DOUBLE)
         }
 
         if (point.isTimeInstant) {
@@ -384,45 +416,45 @@ object SunspecDevice {
     }
 
 
-    data class TypeMapping(val returnType: ReturnType, val functionName: String, val notImplemented: String = "")
+    data class TypeMapping(val functionName: String, val notImplemented: String = "")
 
-    // Maps Point.Type to  outputType, LoadFunction, notImplemented when NO symbols are present
+    // Maps Point.Type to  LoadFunction, notImplemented when NO symbols are present
     private val TYPE_MAPPINGS_NO_SYMBOLS: MutableMap<Point.Type, TypeMapping> = TreeMap()
 
-    // Maps Point.Type to  outputType, LoadFunction, notImplemented when there ARE symbols present
+    // Maps Point.Type to  LoadFunction, notImplemented when there ARE symbols present
     private val TYPE_MAPPINGS_WITH_SYMBOLS: MutableMap<Point.Type, TypeMapping> = TreeMap()
 
     init {
         // PAD is for applications a useless value because it is always 0x8000
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.PAD] =           TypeMapping( ReturnType.STRING,     "hexstring")
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.SUNSSF] =        TypeMapping( ReturnType.LONG,       "int16",      ";0x8000"                                                     )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.INT_16] =        TypeMapping( ReturnType.LONG,       "int16",      ";0x8000"                                                     )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.INT_32] =        TypeMapping( ReturnType.LONG,       "int32",      ";0x8000 0x0000"                                              )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.INT_64] =        TypeMapping( ReturnType.LONG,       "int64",      ";0x8000 0x0000 0x0000 0x0000"                                )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.RAW_16] =        TypeMapping( ReturnType.STRING,     "hexstring")
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.UINT_16] =       TypeMapping( ReturnType.LONG,       "uint16",     "; 0xFFFF ;0x8000"                                            )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.UINT_32] =       TypeMapping( ReturnType.LONG,       "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.UINT_64] =       TypeMapping( ReturnType.LONG,       "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF ;0x8000 0x0000 0x0000 0x0000"  )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.COUNT] =         TypeMapping( ReturnType.LONG,       "uint16",     "; 0x0000"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.ACC_16] =        TypeMapping( ReturnType.LONG,       "uint16",     "; 0x0000"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.ACC_32] =        TypeMapping( ReturnType.LONG,       "uint32",     "; 0x0000 0x0000"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.ACC_64] =        TypeMapping( ReturnType.LONG,       "uint64",     "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.FLOAT_32] =      TypeMapping( ReturnType.DOUBLE,     "ieee754_32", "; 0x7FC0 0x0000"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.FLOAT_64] =      TypeMapping( ReturnType.DOUBLE,     "ieee754_64", "; 0x7FF8 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.STRING] =        TypeMapping( ReturnType.STRING,     "utf8")
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.IPADDR] =        TypeMapping( ReturnType.STRING,     "hexstring",  "; 0x0000 0x0000"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.IPV_6_ADDR] =    TypeMapping( ReturnType.STRING,     "hexstring",  "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.EUI_48] =        TypeMapping( ReturnType.STRING,     "eui48",      "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.ENUM_16] =       TypeMapping( ReturnType.LONG,       "int16",      "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.ENUM_32] =       TypeMapping( ReturnType.LONG,       "int32",      "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.BITFIELD_16] =   TypeMapping( ReturnType.LONG,       "int16",      "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.BITFIELD_32] =   TypeMapping( ReturnType.LONG,       "int32",      "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[Point.Type.BITFIELD_64] =   TypeMapping( ReturnType.LONG,       "int64",      "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               )
-        TYPE_MAPPINGS_WITH_SYMBOLS[Point.Type.ENUM_16] =     TypeMapping( ReturnType.STRING,     "enum",       "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[Point.Type.ENUM_32] =     TypeMapping( ReturnType.STRING,     "enum",       "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[Point.Type.BITFIELD_16] = TypeMapping( ReturnType.STRINGLIST, "bitset",     "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[Point.Type.BITFIELD_32] = TypeMapping( ReturnType.STRINGLIST, "bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // TODO: The 0x8000 0xFFFF is NOT in the SPEC
-        TYPE_MAPPINGS_WITH_SYMBOLS[Point.Type.BITFIELD_64] = TypeMapping( ReturnType.STRINGLIST, "bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[PAD] =           TypeMapping( "hexstring" )
+        TYPE_MAPPINGS_NO_SYMBOLS[SUNSSF] =        TypeMapping( "int16",      ";0x8000"                                                     )
+        TYPE_MAPPINGS_NO_SYMBOLS[INT_16] =        TypeMapping( "int16",      ";0x8000"                                                     )
+        TYPE_MAPPINGS_NO_SYMBOLS[INT_32] =        TypeMapping( "int32",      ";0x8000 0x0000"                                              )
+        TYPE_MAPPINGS_NO_SYMBOLS[INT_64] =        TypeMapping( "int64",      ";0x8000 0x0000 0x0000 0x0000"                                )
+        TYPE_MAPPINGS_NO_SYMBOLS[RAW_16] =        TypeMapping( "hexstring" )
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_16] =       TypeMapping( "uint16",     "; 0xFFFF ;0x8000"                                            )
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_32] =       TypeMapping( "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              )
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_64] =       TypeMapping( "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF ;0x8000 0x0000 0x0000 0x0000"  )
+        TYPE_MAPPINGS_NO_SYMBOLS[COUNT] =         TypeMapping( "uint16",     "; 0x0000"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ACC_16] =        TypeMapping( "uint16",     "; 0x0000"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ACC_32] =        TypeMapping( "uint32",     "; 0x0000 0x0000"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[ACC_64] =        TypeMapping( "uint64",     "; 0x0000 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_32] =      TypeMapping( "ieee754_32", "; 0x7FC0 0x0000"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_64] =      TypeMapping( "ieee754_64", "; 0x7FF8 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[STRING] =        TypeMapping( "utf8" )
+        TYPE_MAPPINGS_NO_SYMBOLS[IPADDR] =        TypeMapping( "hexstring",  "; 0x0000 0x0000"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[IPV_6_ADDR] =    TypeMapping( "hexstring",  "; 0x0000 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[EUI_48] =        TypeMapping( "eui48",      "; 0x0000 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_16] =       TypeMapping( "int16",      "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_32] =       TypeMapping( "int32",      "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping( "int16",      "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping( "int32",      "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping( "int64",      "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               )
+        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_16] =     TypeMapping( "enum",       "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping( "enum",       "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_16] = TypeMapping( "bitset",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_32] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // TODO: The 0x8000 0xFFFF is NOT in the SPEC
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_64] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               )
     }
 }
 

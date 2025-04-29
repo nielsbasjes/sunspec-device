@@ -1,3 +1,19 @@
+/*
+ * Modbus Schema Toolkit
+ * Copyright (C) 2019-2025 Niels Basjes
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package nl.basjes.sunspec.device
 
 import nl.basjes.modbus.device.api.Address
@@ -7,7 +23,12 @@ import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.sunspec.*
+import nl.basjes.sunspec.SUNSPEC_HEADER
+import nl.basjes.sunspec.SUNSPEC_MODEL_ID_REGISTERS
+import nl.basjes.sunspec.SUNSPEC_MODEL_L_REGISTERS
+import nl.basjes.sunspec.SUNSPEC_STANDARD_START_PHYSICAL_ADDRESS
+import nl.basjes.sunspec.SUNS_CHAIN_END_MODEL_ID
+import nl.basjes.sunspec.SUNS_HEADER_MODEL_ID
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 

@@ -25,7 +25,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>sunspec-schema-devtools</artifactId>
+  <artifactId>devtools</artifactId>
 
   <name>SunSpec Device : Dev tools</name>
 
