@@ -15,13 +15,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>nl.basjes.sunspec</groupId>
   <artifactId>sunspec-device-parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.0</version>
 
   <packaging>pom</packaging>
   <name>SunSpec Device :</name>
@@ -34,7 +33,7 @@
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
 
     <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
-    <project.build.outputTimestamp>2001-01-01T01:01:01Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-04-30T10:20:46Z</project.build.outputTimestamp>
 
     <java.version>17</java.version>
     <kotlin.version>2.1.0</kotlin.version>
@@ -497,7 +496,7 @@
     <url>https://github.com/nielsbasjes/sunspec-device</url>
     <connection>scm:git:https://github.com/nielsbasjes/sunspec-device.git</connection>
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.1.0</tag>
   </scm>
 
 </project>
