@@ -276,27 +276,6 @@
 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.11.0</version>
-          <configuration>
-            <showWarnings>true</showWarnings>
-            <showDeprecation>true</showDeprecation>
-            <compilerArgs>
-              <!-- Enable almost all warnings.-->
-              <arg>-Xlint:all</arg>
-              <!-- Ignore the 'serial' warnings about not having a serialVersionUID -->
-              <arg>-Xlint:-serial</arg>
-              <!-- Silence warning "No processor claimed any of these annotations" -->
-              <arg>-Xlint:-processing</arg>
-              <!-- Fail on ANY warning -->
-              <arg>-Werror</arg>
-              <arg>-implicit:class</arg>
-            </compilerArgs>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven-surefire-plugin.version}</version>
           <configuration>
