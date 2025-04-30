@@ -26,6 +26,9 @@
   <packaging>pom</packaging>
   <name>SunSpec Device :</name>
 
+  <description>The Modbus Schema Toolkit makes retrieving data from Modbus based devices a lot easier.</description>
+  <url>https://modbus.basjes.nl</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
@@ -40,6 +43,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <!--    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>-->
+    <dokka-maven-plugin.version>2.0.0</dokka-maven-plugin.version>
 
     <maven-artifact-plugin.version>3.6.0</maven-artifact-plugin.version>
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
@@ -246,8 +250,23 @@
             <executions>
               <execution>
                 <id>attach-javadocs</id>
+                <configuration>
+                  <!-- The creation of the javadoc jar is done for pure Kotlin projects by the dokka plugin. -->
+                  <skip>true</skip>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.jetbrains.dokka</groupId>
+            <artifactId>dokka-maven-plugin</artifactId>
+            <version>${dokka-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
                 <goals>
-                  <goal>jar</goal>
+                  <goal>javadocJar</goal>
                 </goals>
               </execution>
             </executions>
@@ -452,7 +471,7 @@
 
           <preparationProfiles>packageForRelease</preparationProfiles>
           <preparationGoals>clean verify</preparationGoals>
-          <releaseProfiles>packageForRelease,release</releaseProfiles>
+          <releaseProfiles>packageForRelease</releaseProfiles>
           <pushChanges>false</pushChanges>
           <remoteTagging>false</remoteTagging>
         </configuration>

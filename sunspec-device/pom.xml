@@ -29,8 +29,8 @@
   <artifactId>sunspec-device</artifactId>
 
   <name>SunSpec Device : Schema Device</name>
-  <description>The SunSpec modbus schema</description>
-  <url>https://github.com/nielsbasjes/modbus-schema</url>
+  <description>The Modbus Schema Toolkit makes retrieving data from Modbus based devices a lot easier.</description>
+  <url>https://modbus.basjes.nl</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
