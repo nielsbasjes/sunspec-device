@@ -20,7 +20,6 @@ import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import java.util.*
 
 @Serializable
 class Point (
@@ -28,7 +27,7 @@ class Point (
     @SerialName("name")         val name: String,
 
     @Required
-    @SerialName("type")         val type: Type,
+    @SerialName("type")         var type: Type,
     @SerialName("value")        val value: Int? = null,
     @SerialName("count")        val count: Int? = null,
 
@@ -67,18 +66,6 @@ class Point (
      */
     var offsetInGroup = -1
         internal set
-
-    /**
-     * @return true if this point is a number and means the number of seconds since 2000-01-01 00:00:00 UTC
-     */
-    val isTimeInstant: Boolean
-        get() {
-            val desc = description
-            if (type == Type.UINT_32 && desc != null) {
-                return (desc.contains("2000") && desc.lowercase(Locale.getDefault()).contains("seconds"))
-            }
-            return false
-        }
 
     override fun toString(): String {
         return "Point(name='$name', type=$type, units=$units)"
@@ -134,7 +121,12 @@ class Point (
         @SerialName("ipv6addr")   IPV_6_ADDR  ("ipv6addr",   8),
         @SerialName("eui48")      EUI_48      ("eui48",      4),
         @SerialName("sunssf")     SUNSSF      ("sunssf",     1),
-        @SerialName("count")      COUNT       ("count",      1);
+        @SerialName("count")      COUNT       ("count",      1),
+
+        // This IS NOT part of the official SunSpec.
+        // This is my proposal to have a timestamp type.
+        // https://github.com/sunspec/models/issues/259
+        @SerialName("timestamp")  TIMESTAMP   ("timestamp",  2);
 
         override fun toString() = "$value(" + if (registerCount>0) { "$registerCount Registers" } else { "?? Registers" } + ")"
     }

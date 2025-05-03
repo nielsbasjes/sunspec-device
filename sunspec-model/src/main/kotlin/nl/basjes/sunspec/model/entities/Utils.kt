@@ -24,17 +24,8 @@ object Utils {
      */
     fun fixProblemsInStandardSunSpec(model: SunSpecModel) {
         fixProblemsInStandardSunSpec(model.group)
-        if (model.id == 702) {
-            for (point in model.group.points) {
-                when (point.name) {
-                    // Fix some unclear labels
-                    "IntIslandCatRtg" -> point.label = "Intentional Island Categories Rating"
-                    "WUndExtRtgPF"    -> point.label = "Specified Under-Excited Rating Power Factor"
-                    "WOvrExtRtgPF"    -> point.label = "Specified Over-Excited Rating Power Factor"
-                    else -> {}
-                }
-            }
-        }
+        fixUnclearLabelsInStandardSunSpec(model)
+        markTimestampFields(model)
     }
 
     private fun fixProblemsInStandardSunSpec(group: Group) {
@@ -75,4 +66,43 @@ object Utils {
             }
         }
     }
+
+    private fun fixUnclearLabelsInStandardSunSpec(model: SunSpecModel) {
+        if (model.id == 702) {
+            for (point in model.group.points) {
+                when (point.name) {
+                    // Fix some unclear labels
+                    "IntIslandCatRtg" -> point.label = "Intentional Island Categories Rating"
+                    "WUndExtRtgPF" -> point.label = "Specified Under-Excited Rating Power Factor"
+                    "WOvrExtRtgPF" -> point.label = "Specified Over-Excited Rating Power Factor"
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun markPointAsTimestamp(point: Point) {
+        // Letting it fail hard here to ensure it is always valid
+        require(point.type == Point.Type.UINT_32) { "Any type that should be a Timestamp MUST be in the schema as a uint32" }
+        point.type = Point.Type.TIMESTAMP
+        point.description += " Converted to standard UNIX Epoch in Milliseconds."
+    }
+
+    private fun markTimestampFields(model: SunSpecModel) {
+        when (model.id) {
+            3,4,5,6,7,9,220
+                -> model.group.points
+                    .find { it.name == "Ts" }
+                    ?.let { markPointAsTimestamp(it) }
+            122,501,502
+                -> model.group.points
+                    .find { it.name == "Tms" }
+                    ?.let { markPointAsTimestamp(it) }
+            133 -> model.group.groups
+                    .flatMap { group -> group.points }
+                    .find { it.name == "StrTms" }
+                    ?.let { markPointAsTimestamp(it) }
+        }
+    }
+
 }

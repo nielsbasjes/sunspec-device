@@ -56,6 +56,7 @@ import nl.basjes.sunspec.model.entities.Point.Type.ENUM_32
 import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_16
 import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_32
 import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_64
+import nl.basjes.sunspec.model.entities.Point.Type.TIMESTAMP
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -336,7 +337,8 @@ object SunspecDevice {
             STRING,
             IPADDR,
             IPV_6_ADDR,
-            EUI_48 -> {
+            EUI_48,
+            TIMESTAMP -> {
                 typeLoadingParameters = TYPE_MAPPINGS_NO_SYMBOLS[point.type]!!
                 functionName = typeLoadingParameters.functionName
                 additionalArguments = typeLoadingParameters.notImplemented
@@ -396,7 +398,7 @@ object SunspecDevice {
             expression += " * (10^$camelCaseSfName)"
         }
 
-        if (point.isTimeInstant) {
+        if (point.type == TIMESTAMP) {
             val y2kEpochOffset = Instant.parse("2000-01-01T00:00:00.000Z").toEpochMilli()
             expression =  "($expression*1000+$y2kEpochOffset)"
         }
@@ -423,9 +425,10 @@ object SunspecDevice {
         TYPE_MAPPINGS_NO_SYMBOLS[INT_32] =        TypeMapping( "int32",      ";0x8000 0x0000"                                              )
         TYPE_MAPPINGS_NO_SYMBOLS[INT_64] =        TypeMapping( "int64",      ";0x8000 0x0000 0x0000 0x0000"                                )
         TYPE_MAPPINGS_NO_SYMBOLS[RAW_16] =        TypeMapping( "hexstring" )
-        TYPE_MAPPINGS_NO_SYMBOLS[UINT_16] =       TypeMapping( "uint16",     "; 0xFFFF ;0x8000"                                            )
-        TYPE_MAPPINGS_NO_SYMBOLS[UINT_32] =       TypeMapping( "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              )
-        TYPE_MAPPINGS_NO_SYMBOLS[UINT_64] =       TypeMapping( "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF ;0x8000 0x0000 0x0000 0x0000"  )
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_16] =       TypeMapping( "uint16",     "; 0xFFFF ;0x8000"                                            ) // NOTE: The 0x8000... is NOT in the SPEC
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_32] =       TypeMapping( "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              ) // NOTE: The 0x8000... is NOT in the SPEC
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_64] =       TypeMapping( "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF ;0x8000 0x0000 0x0000 0x0000"  ) // NOTE: The 0x8000... is NOT in the SPEC
+        TYPE_MAPPINGS_NO_SYMBOLS[TIMESTAMP] =     TypeMapping( "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              ) // NOTE: "Timestamp" was extra introduced by Niels Basjes
         TYPE_MAPPINGS_NO_SYMBOLS[COUNT] =         TypeMapping( "uint16",     "; 0x0000"                                                    )
         TYPE_MAPPINGS_NO_SYMBOLS[ACC_16] =        TypeMapping( "uint16",     "; 0x0000"                                                    )
         TYPE_MAPPINGS_NO_SYMBOLS[ACC_32] =        TypeMapping( "uint32",     "; 0x0000 0x0000"                                             )
@@ -444,7 +447,7 @@ object SunspecDevice {
         TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_16] =     TypeMapping( "enum",       "; 0xFFFF"                                                    )
         TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping( "enum",       "; 0xFFFF 0xFFFF"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
         TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_16] = TypeMapping( "bitset",     "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_32] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // TODO: The 0x8000 0xFFFF is NOT in the SPEC
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_32] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // NOTE: The 0x8000 0xFFFF is NOT in the SPEC
         TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_64] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
     }
 }
