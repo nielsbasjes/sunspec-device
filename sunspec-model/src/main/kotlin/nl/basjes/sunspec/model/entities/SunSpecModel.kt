@@ -57,7 +57,5 @@ class SunSpecModel (
         group.init()
     }
 
-    override fun toString(): String {
-        return "SunSpecModel(id=$id, label=$cleanLabel)"
-    }
+    override fun toString() = "SunSpecModel(id=$id, label=$cleanLabel)"
 }

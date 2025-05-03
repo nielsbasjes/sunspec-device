@@ -256,7 +256,7 @@ object SunspecDevice {
             if (countString != null) {
                 try {
                     count = countString.toInt()
-                } catch (nfe: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     val countField = block.getField(countString)
                         ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group")
                     countField.update()
@@ -358,15 +358,6 @@ object SunspecDevice {
                 }
             }
 
-            else -> {
-                LOG.warn(
-                    "Model @{}: Dumping point {} with type {} as HexString",
-                    modelBaseAddress, point.name, point.type
-                )
-                // Anything that we missed: Just dump it as a raw hex string
-                functionName = "hexstring"
-                additionalArguments = ""
-            }
         }
 
         val fieldBuilder = Field
@@ -426,7 +417,7 @@ object SunspecDevice {
 
     init {
         // PAD is for applications a useless value because it is always 0x8000
-        TYPE_MAPPINGS_NO_SYMBOLS[PAD] =           TypeMapping( "hexstring" )
+        TYPE_MAPPINGS_NO_SYMBOLS[PAD] =           TypeMapping( "int16",      ";0x8000"                                                     )
         TYPE_MAPPINGS_NO_SYMBOLS[SUNSSF] =        TypeMapping( "int16",      ";0x8000"                                                     )
         TYPE_MAPPINGS_NO_SYMBOLS[INT_16] =        TypeMapping( "int16",      ";0x8000"                                                     )
         TYPE_MAPPINGS_NO_SYMBOLS[INT_32] =        TypeMapping( "int32",      ";0x8000 0x0000"                                              )
@@ -439,22 +430,22 @@ object SunspecDevice {
         TYPE_MAPPINGS_NO_SYMBOLS[ACC_16] =        TypeMapping( "uint16",     "; 0x0000"                                                    )
         TYPE_MAPPINGS_NO_SYMBOLS[ACC_32] =        TypeMapping( "uint32",     "; 0x0000 0x0000"                                             )
         TYPE_MAPPINGS_NO_SYMBOLS[ACC_64] =        TypeMapping( "uint64",     "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_32] =      TypeMapping( "ieee754_32", "; 0x7FC0 0x0000"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_64] =      TypeMapping( "ieee754_64", "; 0x7FF8 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_32] =      TypeMapping( "ieee754_32", "; 0x7FC0 0x0000"               /* IEEE 754 bits for NaN */   )
+        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_64] =      TypeMapping( "ieee754_64", "; 0x7FF8 0x0000 0x0000 0x0000" /* IEEE 754 bits for NaN */   ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
         TYPE_MAPPINGS_NO_SYMBOLS[STRING] =        TypeMapping( "utf8" )
-        TYPE_MAPPINGS_NO_SYMBOLS[IPADDR] =        TypeMapping( "hexstring",  "; 0x0000 0x0000"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[IPV_6_ADDR] =    TypeMapping( "hexstring",  "; 0x0000 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[IPADDR] =        TypeMapping( "ipv4addr",   "; 0x0000 0x0000"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_NO_SYMBOLS[IPV_6_ADDR] =    TypeMapping( "ipv6addr",   "; 0x0000 0x0000 0x0000 0x0000"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
         TYPE_MAPPINGS_NO_SYMBOLS[EUI_48] =        TypeMapping( "eui48",      "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_16] =       TypeMapping( "int16",      "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_32] =       TypeMapping( "int32",      "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping( "int16",      "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping( "int32",      "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping( "int64",      "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_16] =       TypeMapping( "uint16",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_32] =       TypeMapping( "uint32",     "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping( "uint16",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping( "uint32",     "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping( "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
         TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_16] =     TypeMapping( "enum",       "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping( "enum",       "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping( "enum",       "; 0xFFFF 0xFFFF"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
         TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_16] = TypeMapping( "bitset",     "; 0xFFFF"                                                    )
         TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_32] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // TODO: The 0x8000 0xFFFF is NOT in the SPEC
-        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_64] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               )
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_64] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
     }
 }
 

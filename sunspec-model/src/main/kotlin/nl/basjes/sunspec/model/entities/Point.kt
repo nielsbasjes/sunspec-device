@@ -86,20 +86,23 @@ class Point (
 
     @Serializable
     enum class Access(private val value: String) {
-        @SerialName("R")          READONLY("R"),
-        @SerialName("RW")         READWRITE("RW");
+        @SerialName("R")          READONLY("ReadOnly"),
+        @SerialName("RW")         READWRITE("ReadWrite");
+        override fun toString() = value
     }
 
     @Serializable
     enum class Mandatory(private val value: String) {
-        @SerialName("M")          MANDATORY("M"),
-        @SerialName("O")          OPTIONAL("O");
+        @SerialName("M")          MANDATORY("Mandatory"),
+        @SerialName("O")          OPTIONAL("Optional");
+        override fun toString() = value
     }
 
     @Serializable
     enum class Mutable(private val value: String) {
-        @SerialName("D")          MUTABLE("D"),
-        @SerialName("S")          IMMUTABLE("S");
+        @SerialName("D")          MUTABLE("Dynamic"),
+        @SerialName("S")          IMMUTABLE("Static");
+        override fun toString() = value
     }
 
     @Serializable
@@ -132,5 +135,7 @@ class Point (
         @SerialName("eui48")      EUI_48      ("eui48",      4),
         @SerialName("sunssf")     SUNSSF      ("sunssf",     1),
         @SerialName("count")      COUNT       ("count",      1);
+
+        override fun toString() = "$value(" + if (registerCount>0) { "$registerCount Registers" } else { "?? Registers" } + ")"
     }
 }

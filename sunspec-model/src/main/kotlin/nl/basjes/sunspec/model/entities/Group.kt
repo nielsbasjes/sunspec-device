@@ -75,5 +75,6 @@ class Group(
     enum class Type(private val value: String) {
         @SerialName("group")        GROUP("group"),
         @SerialName("sync")         SYNC("sync");
+        override fun toString() = value
     }
 }
