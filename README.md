@@ -4,6 +4,12 @@ Even a software upgrade can and will change the Modbus Schema.
 
 This SunSpec specific library combines discovering the SunSpec models in a specific device with the officially published SunSpec models to generate the Modbus Schema automatically.
 
+Note that code that wraps "sunspec-models" does make a few corrections to the official models:
+- Some typos
+- Some unclear labels
+- Introduces the `timestamp` type for all Points that are essentially "The number of seconds since 2000-01-01"
+
+
 # Modbus Schema Toolkit
 This is part of the Modbus Schema Toolkit I ([Niels Basjes](https://niels.basjes.nl)) created that makes retrieving data from Modbus based devices a lot easier.
 
