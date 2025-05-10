@@ -98,15 +98,42 @@
 
     <sourceDirectory>src/main/kotlin</sourceDirectory>
     <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+
     <resources>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
+
       <resource>
         <directory>target/generated-resources</directory>
       </resource>
+
+      <resource>
+        <directory>${project.basedir}/src/main/code-gen/version/</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>Version.kt</include>
+        </includes>
+        <targetPath>${project.basedir}/target/generated-sources/kotlin/nl/basjes/sunspec/</targetPath>
+      </resource>
     </resources>
+
     <plugins>
+      <plugin>
+        <!-- Description: https://github.com/git-commit-id/git-commit-id-maven-plugin -->
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>${git-commit-id-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>Fill the git related properties</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
