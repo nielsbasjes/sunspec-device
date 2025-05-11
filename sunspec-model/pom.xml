@@ -141,8 +141,11 @@
         <version>3.3.1</version>
         <executions>
           <execution>
-            <id>default-resources</id>
+            <id>Generate sources via resources</id>
             <phase>generate-sources</phase> <!-- Move the source generation to before the kotlin compiler -->
+            <goals>
+              <goal>resources</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
