@@ -305,7 +305,9 @@ object SunspecDevice {
                     block,
                     subGroupPrefix + index + "_",
                     subGroup,
-                    thisModelAddress.increment(group.dataSize + (index * subGroup.dataSize)),
+                    thisModelAddress.increment(
+                        SUNSPEC_MODEL_ID_REGISTERS + SUNSPEC_MODEL_L_REGISTERS + group.dataSize + (index * subGroup.dataSize),
+                    ),
                     modelId,
                     null,
                 )
