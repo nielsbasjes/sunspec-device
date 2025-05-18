@@ -29,6 +29,7 @@ import nl.basjes.sunspec.SUNSPEC_MODEL_L_REGISTERS
 import nl.basjes.sunspec.SUNSPEC_STANDARD_START_PHYSICAL_ADDRESS
 import nl.basjes.sunspec.SUNS_CHAIN_END_MODEL_ID
 import nl.basjes.sunspec.SUNS_HEADER_MODEL_ID
+import nl.basjes.sunspec.device.Utils.addModelHeaderFields
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -42,22 +43,23 @@ object SunSpecDeviceModelFinder {
      * @return The list of models that were found
      */
     @Throws(ModbusException::class)
-    fun findDeviceSunSpecModels(modbusDevice: ModbusDevice?): List<DeviceSunSpecModel> {
+    fun findDeviceSunSpecModels(modbusDevice: ModbusDevice): List<DeviceSunSpecModel> {
         val models: MutableList<DeviceSunSpecModel> = ArrayList()
 
         // Search for the SunSpec base definitions
-        val ( sunSpecStartAddress, schemaDevice )  = findSunSpecDevice(modbusDevice)
+        val (sunSpecStartAddress, schemaDevice) = findSunSpecDevice(modbusDevice)
 
         models.add(DeviceSunSpecModel(sunSpecStartAddress, SUNS_HEADER_MODEL_ID, 0))
 
         var nextModelAddress = sunSpecStartAddress.increment(2)
         while (true) {
-            val readModelHeaderBlock = Block
-                .builder()
-                .schemaDevice(schemaDevice!!)
-                .id("Block_at_" + nextModelAddress.toModiconX())
-                .description("Model Header at $nextModelAddress")
-                .build()
+            val readModelHeaderBlock =
+                Block
+                    .builder()
+                    .schemaDevice(schemaDevice!!)
+                    .id("Block_at_" + nextModelAddress.toModiconX())
+                    .description("Model Header at $nextModelAddress")
+                    .build()
 
             val (readModelIdField, readModelLengthField) =
                 addModelHeaderFields(
@@ -65,7 +67,8 @@ object SunSpecDeviceModelFinder {
                     nextModelAddress,
                 )
 
-            schemaDevice.updateAll()
+            // Update everything that is older than 1000 seconds.
+            schemaDevice.updateAll(1000000)
 
             val longModelId = readModelIdField.longValue
             val longModelLength = readModelLengthField.longValue
@@ -115,7 +118,7 @@ object SunSpecDeviceModelFinder {
      * @throws ModbusException In case of error.
      */
     @Throws(ModbusException::class)
-    fun findSunSpecDevice(modbusDevice: ModbusDevice?): Pair<Address, SchemaDevice?> {
+    fun findSunSpecDevice(modbusDevice: ModbusDevice): Pair<Address, SchemaDevice?> {
         var sunSpecStartAddress: Address? = null
         var schemaDevice: SchemaDevice? = null
 
@@ -130,7 +133,7 @@ object SunSpecDeviceModelFinder {
                     .description("A SunSpec device with base $sunSpecStartAddress")
                     .build()
 
-            schemaDevice.connect(modbusDevice!!)
+            schemaDevice.connect(modbusDevice)
 
             val sunSHeaderField = Utils.addSunSHeaderBlock(schemaDevice, sunSpecStartAddress)
             schemaDevice.updateAll()
