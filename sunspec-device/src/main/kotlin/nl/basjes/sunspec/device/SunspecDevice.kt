@@ -136,11 +136,7 @@ object SunspecDevice {
         LOG.info("Detected models: \n{}", table)
 
         val schemaDevice = SchemaDevice(description)
-        // Ensure this new SchemaDevice is connected to the same ModbusDevice
-        // DO NOT use the optimized version because some devices (i.e. mine does) will give
-        // a modbus level error if you fetch a register for something it does not have.
-        // Such a situation will make the entire block fail, so for starters we fetch them one by one.
-        schemaDevice.connectBase(modbusDevice)
+        schemaDevice.connect(modbusDevice)
 
         for (deviceSunSpecModel in deviceSunSpecModels) {
             val modelId = deviceSunSpecModel.id
