@@ -20,6 +20,7 @@ import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Suppress("unused") // Some SunSpec defined properties are unused
 @Serializable
 class Symbol(
     @Required

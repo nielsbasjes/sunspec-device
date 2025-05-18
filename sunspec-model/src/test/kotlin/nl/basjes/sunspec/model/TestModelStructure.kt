@@ -52,7 +52,7 @@ internal class TestModelStructure {
         try {
             checkAllCodeNamesAreUnique(model.group)
         } catch (afe: AssertionFailedError) {
-            throw AssertionFailedError("Problem in model " + model.id, afe.getExpected(), afe.getActual(), afe)
+            throw AssertionFailedError("Problem in model " + model.id, afe.expected, afe.actual, afe)
         }
     }
 
@@ -89,7 +89,7 @@ internal class TestModelStructure {
 
     private fun getScalingFactors(points: List<Point>): List<String> {
         return points
-            .filter { point -> point.type.equals(Point.Type.SUNSSF) }
+            .filter { point -> point.type == Point.Type.SUNSSF }
             .map { it.name }
             .toList()
     }

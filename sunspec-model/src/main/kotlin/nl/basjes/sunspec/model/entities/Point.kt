@@ -21,6 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
+@Suppress("unused") // Some SunSpec defined properties are unused
 @Serializable
 class Point (
     @Required

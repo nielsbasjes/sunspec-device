@@ -29,44 +29,45 @@ import nl.basjes.sunspec.SUNSPEC_MODEL_ID_REGISTERS
 import nl.basjes.sunspec.SUNSPEC_MODEL_L_REGISTERS
 import nl.basjes.sunspec.SUNS_CHAIN_END_MODEL_ID
 import nl.basjes.sunspec.SUNS_HEADER_MODEL_ID
+import nl.basjes.sunspec.device.SunSpecDeviceModelFinder.findDeviceSunSpecModels
 import nl.basjes.sunspec.model.SunSpec
 import nl.basjes.sunspec.model.entities.Group
 import nl.basjes.sunspec.model.entities.Point
-import nl.basjes.sunspec.model.entities.Point.Type.INT_16
-import nl.basjes.sunspec.model.entities.Point.Type.INT_32
-import nl.basjes.sunspec.model.entities.Point.Type.INT_64
-import nl.basjes.sunspec.model.entities.Point.Type.PAD
-import nl.basjes.sunspec.model.entities.Point.Type.RAW_16
-import nl.basjes.sunspec.model.entities.Point.Type.SUNSSF
-import nl.basjes.sunspec.model.entities.Point.Type.UINT_16
-import nl.basjes.sunspec.model.entities.Point.Type.UINT_32
-import nl.basjes.sunspec.model.entities.Point.Type.UINT_64
-import nl.basjes.sunspec.model.entities.Point.Type.COUNT
 import nl.basjes.sunspec.model.entities.Point.Type.ACC_16
 import nl.basjes.sunspec.model.entities.Point.Type.ACC_32
 import nl.basjes.sunspec.model.entities.Point.Type.ACC_64
-import nl.basjes.sunspec.model.entities.Point.Type.FLOAT_32
-import nl.basjes.sunspec.model.entities.Point.Type.FLOAT_64
-import nl.basjes.sunspec.model.entities.Point.Type.STRING
-import nl.basjes.sunspec.model.entities.Point.Type.IPADDR
-import nl.basjes.sunspec.model.entities.Point.Type.IPV_6_ADDR
-import nl.basjes.sunspec.model.entities.Point.Type.EUI_48
-import nl.basjes.sunspec.model.entities.Point.Type.ENUM_16
-import nl.basjes.sunspec.model.entities.Point.Type.ENUM_32
 import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_16
 import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_32
 import nl.basjes.sunspec.model.entities.Point.Type.BITFIELD_64
+import nl.basjes.sunspec.model.entities.Point.Type.COUNT
+import nl.basjes.sunspec.model.entities.Point.Type.ENUM_16
+import nl.basjes.sunspec.model.entities.Point.Type.ENUM_32
+import nl.basjes.sunspec.model.entities.Point.Type.EUI_48
+import nl.basjes.sunspec.model.entities.Point.Type.FLOAT_32
+import nl.basjes.sunspec.model.entities.Point.Type.FLOAT_64
+import nl.basjes.sunspec.model.entities.Point.Type.INT_16
+import nl.basjes.sunspec.model.entities.Point.Type.INT_32
+import nl.basjes.sunspec.model.entities.Point.Type.INT_64
+import nl.basjes.sunspec.model.entities.Point.Type.IPADDR
+import nl.basjes.sunspec.model.entities.Point.Type.IPV_6_ADDR
+import nl.basjes.sunspec.model.entities.Point.Type.PAD
+import nl.basjes.sunspec.model.entities.Point.Type.RAW_16
+import nl.basjes.sunspec.model.entities.Point.Type.STRING
+import nl.basjes.sunspec.model.entities.Point.Type.SUNSSF
 import nl.basjes.sunspec.model.entities.Point.Type.TIMESTAMP
-
+import nl.basjes.sunspec.model.entities.Point.Type.UINT_16
+import nl.basjes.sunspec.model.entities.Point.Type.UINT_32
+import nl.basjes.sunspec.model.entities.Point.Type.UINT_64
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Instant
-import java.util.*
+import java.util.TreeMap
 
+@Suppress("ktlint:standard:comment-wrapping", "ktlint:standard:max-line-length", "ktlint:standard:paren-spacing")
 object SunspecDevice {
     private val LOG: Logger = LogManager.getLogger()
 
-    private fun getFirstRegisterValue(field: Field): RegisterValue?  {
+    private fun getFirstRegisterValue(field: Field): RegisterValue? {
         field.initialize()
         val parsedExpression = field.parsedExpression ?: return null  // Nothing to do
         val registerValues = parsedExpression.getRegisterValues(field.block.schemaDevice)
@@ -100,7 +101,7 @@ object SunspecDevice {
         val sunSpec = SunSpec()
 
         // Get the list of all SunSpec model actually present in this device
-        val deviceSunSpecModels = SunSpecDeviceModelFinder.findDeviceSunSpecModels(modbusDevice)
+        val deviceSunSpecModels = findDeviceSunSpecModels(modbusDevice)
 
         if (deviceSunSpecModels.isEmpty()) {
             LOG.error("Unable to find any SunSpec models")
@@ -109,7 +110,10 @@ object SunspecDevice {
 
         val table = StringTable()
         table.withHeaders(
-            "Model", "Address", "Length", "Label"
+            "Model",
+            "Address",
+            "Length",
+            "Label",
         )
         for (deviceSunSpecModel in deviceSunSpecModels) {
             val model = sunSpec.getModel(deviceSunSpecModel.id)
@@ -118,14 +122,14 @@ object SunspecDevice {
                     deviceSunSpecModel.id.toString(),
                     deviceSunSpecModel.address.toCleanFormat(),
                     deviceSunSpecModel.registers.toString(),
-                    "Non existent model"
+                    "Non existent model",
                 )
             } else {
                 table.addRow(
                     deviceSunSpecModel.id.toString(),
                     deviceSunSpecModel.address.toCleanFormat(),
                     deviceSunSpecModel.registers.toString(),
-                    model.cleanLabel ?: ""
+                    model.cleanLabel ?: "",
                 )
             }
         }
@@ -174,16 +178,16 @@ object SunspecDevice {
                     "[Model " + sunSpecModel.id + "]:" + sunSpecModel.group.label + ": " + sunSpecModel.group.description
                 }
 
-            val block = Block
-                .builder()
-                .schemaDevice(schemaDevice)
-                .id("Model " + sunSpecModel.id)
-                .description(modelDescription)
-                .build()
+            val block =
+                Block
+                    .builder()
+                    .schemaDevice(schemaDevice)
+                    .id("Model " + sunSpecModel.id)
+                    .description(modelDescription)
+                    .build()
 
             addGroup(block, "", sunSpecModel.group, modelAddress, modelId, modelLength)
         }
-
 
         if (!schemaDevice.initialize()) {
             throw ModbusException("Unable to initialize the schema device")
@@ -193,9 +197,9 @@ object SunspecDevice {
         if (description.isBlank()) {
             schemaDevice["Model 1"]?.let {
                 val manufacturer = it["Mn"]
-                val model =  it["Md"]
-                val serialNr =  it["SN"]
-                val version =  it["Vr"]
+                val model        = it["Md"]
+                val serialNr     = it["SN"]
+                val version      = it["Vr"]
                 requireNotNull(manufacturer)
                 requireNotNull(model)
                 requireNotNull(serialNr)
@@ -206,7 +210,8 @@ object SunspecDevice {
                 serialNr.need()
                 version.need()
                 schemaDevice.update(1000)
-                schemaDevice.description = "A schema specifically for the SunSpec device made by ${manufacturer.stringValue} model ${model.stringValue} using version ${version.stringValue} (SN: ${serialNr.stringValue})"
+                schemaDevice.description =
+                    "A schema specifically for the SunSpec device made by ${manufacturer.stringValue} model ${model.stringValue} using version ${version.stringValue} (SN: ${serialNr.stringValue})"
             }
         }
 
@@ -220,7 +225,7 @@ object SunspecDevice {
         group: Group,
         thisModelAddress: Address,
         modelId: Int,
-        modelLength: Int?
+        modelLength: Int?,
     ) {
         // Add the Points that are directly in this model.
 
@@ -235,18 +240,26 @@ object SunspecDevice {
 
             when (pointCounter) {
                 // 1: The ID
-                1 -> getFirstRegisterValue(field)?.let {
-                    it.comment =
-                        "--------------------------------------\n" +
-                        "Model $modelId [Header @ ${it.address.toCleanFormat()}]: ${group.label}"
+                1 -> {
+                    getFirstRegisterValue(field)?.let {
+                        it.comment =
+                            "--------------------------------------\n" +
+                            "Model $modelId [Header @ ${it.address.toCleanFormat()}]: ${group.label}"
                     }
+                }
 
                 // 2: The Length
                 2 -> {}
+
                 // 3: The first data register
-                3 -> getFirstRegisterValue(field)?.let {
-                    it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${it.address.increment(modelLength!!).toCleanFormat()}]: $modelLength registers"
+                3 -> {
+                    getFirstRegisterValue(field)?.let {
+                        it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
+                            it.address.increment(modelLength!!).toCleanFormat()
+                        }]: $modelLength registers"
+                    }
                 }
+
                 else -> {}
             }
         }
@@ -258,11 +271,13 @@ object SunspecDevice {
                 try {
                     count = countString.toInt()
                 } catch (_: NumberFormatException) {
-                    val countField = block.getField(countString)
-                        ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group")
+                    val countField =
+                        block.getField(countString)
+                            ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group")
                     countField.update()
-                    val countValue = countField.longValue
-                        ?: throw ModbusException("Unable to read the value of the count field named \"$countString\" for this group")
+                    val countValue =
+                        countField.longValue
+                            ?: throw ModbusException("Unable to read the value of the count field named \"$countString\" for this group")
                     count = Math.toIntExact(countValue)
                 }
             }
@@ -278,7 +293,9 @@ object SunspecDevice {
 
                 // Check for rounding errors
                 require(group.dataSize + (subGroup.dataSize * count) == modelLength) {
-                    throw ModbusException("SunSpec repeat block problem: ${group.dataSize} + (${subGroup.dataSize} * $count) == $modelLength)")
+                    throw ModbusException(
+                        "SunSpec repeat block problem: ${group.dataSize} + (${subGroup.dataSize} * $count) == $modelLength)",
+                    )
                 }
             }
 
@@ -294,12 +311,11 @@ object SunspecDevice {
                     subGroup,
                     thisModelAddress.increment(group.dataSize + (index * subGroup.dataSize)),
                     modelId,
-                    null
+                    null,
                 )
             }
         }
     }
-
 
     // ----------------------------------------------------------------------------------------------------
     private fun mappingString(point: Point): String {
@@ -311,7 +327,13 @@ object SunspecDevice {
     }
 
     private fun Point.getCamelCaseName() = convertToCodeCompliantName(name, true)
-    private fun Point.getCamelCaseSfName() = if (scalingFactor== null) { null } else { convertToCodeCompliantName(scalingFactor!!, true) }
+
+    private fun Point.getCamelCaseSfName() =
+        if (scalingFactor == null) {
+            null
+        } else {
+            convertToCodeCompliantName(scalingFactor!!, true)
+        }
 
     private fun createAndAddFieldToModel(block: Block, modelBaseAddress: Address, point: Point, prefix: String): Field {
         val functionName: String
@@ -338,7 +360,8 @@ object SunspecDevice {
             IPADDR,
             IPV_6_ADDR,
             EUI_48,
-            TIMESTAMP -> {
+            TIMESTAMP,
+            -> {
                 typeLoadingParameters = TYPE_MAPPINGS_NO_SYMBOLS[point.type]!!
                 functionName = typeLoadingParameters.functionName
                 additionalArguments = typeLoadingParameters.notImplemented
@@ -348,7 +371,8 @@ object SunspecDevice {
             BITFIELD_32,
             BITFIELD_64,
             ENUM_16,
-            ENUM_32 -> {
+            ENUM_32,
+            -> {
                 if (point.symbols.isEmpty()) {
                     typeLoadingParameters = TYPE_MAPPINGS_NO_SYMBOLS[point.type]!!
                     functionName = typeLoadingParameters.functionName
@@ -359,30 +383,31 @@ object SunspecDevice {
                     additionalArguments = typeLoadingParameters.notImplemented + mappingString(point)
                 }
             }
-
         }
 
-        val fieldBuilder = Field
-            .builder()
-            .block(block)
-            .id(prefix + point.getCamelCaseName())
-            .unit(point.units)
-            .immutable(point.mutable == Point.Mutable.IMMUTABLE)
+        val fieldBuilder =
+            Field
+                .builder()
+                .block(block)
+                .id(prefix + point.getCamelCaseName())
+                .unit(point.units)
+                .immutable(point.mutable == Point.Mutable.IMMUTABLE)
 
         if (point.type == SUNSSF) {
             fieldBuilder.description("[${block.id}](${point.name}): Scaling factor")
         } else {
-            val label: String
-            if (point.label.isNullOrEmpty()) {
-                label = "[${block.id}](${point.name}): ${point.description?:""}"
-            } else {
-                label = "[${block.id}](${point.label}): ${point.description?:""}"
-            }
+            val label =
+                if (point.label.isNullOrEmpty()) {
+                    "[${block.id}](${point.name}): ${point.description ?: ""}"
+                } else {
+                    "[${block.id}](${point.label}): ${point.description ?: ""}"
+                }
             fieldBuilder.description(label)
         }
 
         // Some fields are considered to be system fields (i.e. not directly usable applications fields)
-        if (point.type == SUNSSF || point.type == PAD ||
+        if (point.type == SUNSSF ||
+            point.type == PAD ||
             (point.isImmutable() && (point.name == "ID" || point.name == "L"))
         ) {
             fieldBuilder.system(true).immutable(true)
@@ -400,7 +425,7 @@ object SunspecDevice {
 
         if (point.type == TIMESTAMP) {
             val y2kEpochOffset = Instant.parse("2000-01-01T00:00:00.000Z").toEpochMilli()
-            expression =  "($expression*1000+$y2kEpochOffset)"
+            expression = "($expression*1000+$y2kEpochOffset)"
         }
 
         return fieldBuilder
@@ -408,8 +433,10 @@ object SunspecDevice {
             .build()
     }
 
-
-    data class TypeMapping(val functionName: String, val notImplemented: String = "")
+    data class TypeMapping(
+        val functionName: String,
+        val notImplemented: String = "",
+    )
 
     // Maps Point.Type to  LoadFunction, notImplemented when NO symbols are present
     private val TYPE_MAPPINGS_NO_SYMBOLS: MutableMap<Point.Type, TypeMapping> = TreeMap()
@@ -419,36 +446,38 @@ object SunspecDevice {
 
     init {
         // PAD is for applications a useless value because it is always 0x8000
-        TYPE_MAPPINGS_NO_SYMBOLS[PAD] =           TypeMapping( "int16",      ";0x8000"                                                     )
-        TYPE_MAPPINGS_NO_SYMBOLS[SUNSSF] =        TypeMapping( "int16",      ";0x8000"                                                     )
-        TYPE_MAPPINGS_NO_SYMBOLS[INT_16] =        TypeMapping( "int16",      ";0x8000"                                                     )
-        TYPE_MAPPINGS_NO_SYMBOLS[INT_32] =        TypeMapping( "int32",      ";0x8000 0x0000"                                              )
-        TYPE_MAPPINGS_NO_SYMBOLS[INT_64] =        TypeMapping( "int64",      ";0x8000 0x0000 0x0000 0x0000"                                )
-        TYPE_MAPPINGS_NO_SYMBOLS[RAW_16] =        TypeMapping( "hexstring" )
-        TYPE_MAPPINGS_NO_SYMBOLS[UINT_16] =       TypeMapping( "uint16",     "; 0xFFFF ;0x8000"                                            ) // NOTE: The 0x8000... is NOT in the SPEC
-        TYPE_MAPPINGS_NO_SYMBOLS[UINT_32] =       TypeMapping( "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              ) // NOTE: The 0x8000... is NOT in the SPEC
-        TYPE_MAPPINGS_NO_SYMBOLS[UINT_64] =       TypeMapping( "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF ;0x8000 0x0000 0x0000 0x0000"  ) // NOTE: The 0x8000... is NOT in the SPEC
-        TYPE_MAPPINGS_NO_SYMBOLS[TIMESTAMP] =     TypeMapping( "uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              ) // NOTE: "Timestamp" was extra introduced by Niels Basjes
-        TYPE_MAPPINGS_NO_SYMBOLS[COUNT] =         TypeMapping( "uint16",     "; 0x0000"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[ACC_16] =        TypeMapping( "uint16",     "; 0x0000"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[ACC_32] =        TypeMapping( "uint32",     "; 0x0000 0x0000"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[ACC_64] =        TypeMapping( "uint64",     "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_32] =      TypeMapping( "ieee754_32", "; 0x7FC0 0x0000"               /* IEEE 754 bits for NaN */   )
-        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_64] =      TypeMapping( "ieee754_64", "; 0x7FF8 0x0000 0x0000 0x0000" /* IEEE 754 bits for NaN */   ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
-        TYPE_MAPPINGS_NO_SYMBOLS[STRING] =        TypeMapping( "utf8" )
-        TYPE_MAPPINGS_NO_SYMBOLS[IPADDR] =        TypeMapping( "ipv4addr",   "; 0x0000 0x0000"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
-        TYPE_MAPPINGS_NO_SYMBOLS[IPV_6_ADDR] =    TypeMapping( "ipv6addr",   "; 0x0000 0x0000 0x0000 0x0000"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
-        TYPE_MAPPINGS_NO_SYMBOLS[EUI_48] =        TypeMapping( "eui48",      "; 0x0000 0x0000 0x0000 0x0000"                               )
-        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_16] =       TypeMapping( "uint16",     "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_32] =       TypeMapping( "uint32",     "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping( "uint16",     "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping( "uint32",     "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping( "uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
-        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_16] =     TypeMapping( "enum",       "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping( "enum",       "; 0xFFFF 0xFFFF"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
-        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_16] = TypeMapping( "bitset",     "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_32] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // NOTE: The 0x8000 0xFFFF is NOT in the SPEC
-        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_64] = TypeMapping( "bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_NO_SYMBOLS[PAD] =           TypeMapping("int16",      ";0x8000"                                                     )
+        TYPE_MAPPINGS_NO_SYMBOLS[SUNSSF] =        TypeMapping("int16",      ";0x8000"                                                     )
+        TYPE_MAPPINGS_NO_SYMBOLS[INT_16] =        TypeMapping("int16",      ";0x8000"                                                     )
+        TYPE_MAPPINGS_NO_SYMBOLS[INT_32] =        TypeMapping("int32",      ";0x8000 0x0000"                                              )
+        TYPE_MAPPINGS_NO_SYMBOLS[INT_64] =        TypeMapping("int64",      ";0x8000 0x0000 0x0000 0x0000"                                )
+        TYPE_MAPPINGS_NO_SYMBOLS[RAW_16] =        TypeMapping("hexstring"                                                                 )
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_16] =       TypeMapping("uint16",     "; 0xFFFF ;0x8000"                                            ) // NOTE: The 0x8000... is NOT in the SPEC
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_32] =       TypeMapping("uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              ) // NOTE: The 0x8000... is NOT in the SPEC
+        TYPE_MAPPINGS_NO_SYMBOLS[UINT_64] =       TypeMapping("uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF ;0x8000 0x0000 0x0000 0x0000"  ) // NOTE: The 0x8000... is NOT in the SPEC
+        TYPE_MAPPINGS_NO_SYMBOLS[TIMESTAMP] =     TypeMapping("uint32",     "; 0xFFFF 0xFFFF ;0x8000 0x0000"                              ) // NOTE: "Timestamp" was extra introduced by Niels Basjes
+        TYPE_MAPPINGS_NO_SYMBOLS[COUNT] =         TypeMapping("uint16",     "; 0x0000"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ACC_16] =        TypeMapping("uint16",     "; 0x0000"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ACC_32] =        TypeMapping("uint32",     "; 0x0000 0x0000"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[ACC_64] =        TypeMapping("uint64",     "; 0x0000 0x0000 0x0000 0x0000"                               )
+        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_32] =      TypeMapping("ieee754_32", "; 0x7FC0 0x0000"               /* IEEE 754 bits for NaN */   )
+        TYPE_MAPPINGS_NO_SYMBOLS[FLOAT_64] =      TypeMapping("ieee754_64", "; 0x7FF8 0x0000 0x0000 0x0000" /* IEEE 754 bits for NaN */   ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_NO_SYMBOLS[STRING] =        TypeMapping("utf8"                                                                      )
+        TYPE_MAPPINGS_NO_SYMBOLS[IPADDR] =        TypeMapping("ipv4addr",   "; 0x0000 0x0000"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_NO_SYMBOLS[IPV_6_ADDR] =    TypeMapping("ipv6addr",   "; 0x0000 0x0000 0x0000 0x0000"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_NO_SYMBOLS[EUI_48] =        TypeMapping("eui48",      "; 0x0000 0x0000 0x0000 0x0000"                               )
+
+        // These would normally have symbols but do not always have any because some are vendor specific
+        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_16] =       TypeMapping("uint16",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[ENUM_32] =       TypeMapping("uint32",     "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping("uint16",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping("uint32",     "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping("uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+
+        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_16] =     TypeMapping("enum",       "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping("enum",       "; 0xFFFF 0xFFFF"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_16] = TypeMapping("bitset",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_32] = TypeMapping("bitset",     "; 0xFFFF 0xFFFF ; 0x8000 0xFFFF"                             ) // NOTE: The 0x8000 0xFFFF is NOT in the SPEC
+        TYPE_MAPPINGS_WITH_SYMBOLS[BITFIELD_64] = TypeMapping("bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
     }
 }
-
