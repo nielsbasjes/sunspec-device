@@ -30,15 +30,18 @@ internal class TestJsonSchema {
     @Test
     fun testModelsAgainstSchema() {
         // Load the schema
-        val modelResource = this.javaClass.classLoader.getResource(SUNSPEC_SCHEMA_FILENAME)
-            ?: throw IllegalStateException("Unable to locate $SUNSPEC_SCHEMA_FILENAME ... this should never happen")
+        val modelResource =
+            this.javaClass.classLoader.getResource(SUNSPEC_SCHEMA_FILENAME)
+                ?: throw IllegalStateException("Unable to locate $SUNSPEC_SCHEMA_FILENAME ... this should never happen")
         val sunSpecSchema = JsonSchema.fromDefinition(modelResource.readText())
         assertNotNull(sunSpecSchema, "Unable to parse schema.json")
 
         for (modelFileName in SUNSPEC_MODEL_FILENAMES) {
             val sunSpecModelJson =
                 try {
-                    this.javaClass.classLoader.getResource(modelFileName)?.readText()
+                    this.javaClass.classLoader
+                        .getResource(modelFileName)
+                        ?.readText()
                         ?: throw IllegalStateException("Unable to locate $modelFileName ... this should never happen")
                 } catch (e: IOException) {
                     throw RuntimeException(e)
