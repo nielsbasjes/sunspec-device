@@ -24,12 +24,13 @@ import nl.basjes.modbus.schema.SchemaDevice
 object Utils {
     fun addSunSHeaderBlock(schemaDevice: SchemaDevice?, sunSpecStartAddress: Address): Field {
         // Create the root block with only the SunS header field.
-        val sunSHeaderBlock = Block
-            .builder()
-            .schemaDevice(schemaDevice!!)
-            .id("SunSpecHeader")
-            .description("The header that starts the SunSpec model list")
-            .build()
+        val sunSHeaderBlock =
+            Block
+                .builder()
+                .schemaDevice(schemaDevice!!)
+                .id("SunSpecHeader")
+                .description("The header that starts the SunSpec model list")
+                .build()
 
         return Field
             .builder()
@@ -52,26 +53,29 @@ object Utils {
             .build()
     }
 
-
-    fun addModelHeaderFields(block: Block?, thisModelAddress: Address): Pair<Field, Field> {
+    fun addModelHeaderFields(block: Block, thisModelAddress: Address): Pair<Field, Field> {
         // ALL Models start with an ID and a Length field that is the same in all cases
-        val modelIdField = Field.builder()
-            .block(block!!)
-            .id("ID")
-            .description("Model identifier")
-            .immutable(true)
-            .expression("uint16($thisModelAddress)")
-            .system(true)
-            .build()
+        val modelIdField =
+            Field
+                .builder()
+                .block(block)
+                .id("ID")
+                .description("Model identifier")
+                .immutable(true)
+                .expression("uint16($thisModelAddress)")
+                .system(true)
+                .build()
 
-        val modelLengthField = Field.builder()
-            .block(block)
-            .id("L")
-            .description("Model length")
-            .immutable(true)
-            .expression("uint16(" + thisModelAddress.increment() + ")")
-            .system(true)
-            .build()
+        val modelLengthField =
+            Field
+                .builder()
+                .block(block)
+                .id("L")
+                .description("Model length")
+                .immutable(true)
+                .expression("uint16(" + thisModelAddress.increment() + ")")
+                .system(true)
+                .build()
         return Pair(modelIdField, modelLengthField)
     }
 }

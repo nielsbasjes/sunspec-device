@@ -59,7 +59,11 @@ object SunSpecDeviceModelFinder {
                 .description("Model Header at $nextModelAddress")
                 .build()
 
-            val (readModelIdField, readModelLengthField) = Utils.addModelHeaderFields(readModelHeaderBlock, nextModelAddress)
+            val (readModelIdField, readModelLengthField) =
+                addModelHeaderFields(
+                    readModelHeaderBlock,
+                    nextModelAddress,
+                )
 
             schemaDevice.updateAll()
 
@@ -68,7 +72,9 @@ object SunSpecDeviceModelFinder {
 
             LOG.info(
                 "At {}: Model id={} --> {} registers",
-                nextModelAddress, longModelId, longModelLength
+                nextModelAddress,
+                longModelId,
+                longModelLength,
             )
 
             // The modelId we got is invalid.
@@ -76,7 +82,6 @@ object SunSpecDeviceModelFinder {
                 throw ModbusException("Sunspec: model id $longModelId is invalid")
             }
             val modelId = Math.toIntExact(longModelId)
-
 
             // The max 2048 is a guess based on the reality of the data models.
             if (longModelLength == null || longModelLength < 0 || longModelLength > 2048) {
@@ -119,10 +124,11 @@ object SunSpecDeviceModelFinder {
             LOG.info("Looking for SunSpec header at {}", sunSpecStartAddress)
 
             // Create the empty SchemaDevice
-            schemaDevice = SchemaDevice
-                .builder()
-                .description("A SunSpec device with base $sunSpecStartAddress")
-                .build()
+            schemaDevice =
+                SchemaDevice
+                    .builder()
+                    .description("A SunSpec device with base $sunSpecStartAddress")
+                    .build()
 
             schemaDevice.connect(modbusDevice!!)
 
@@ -140,14 +146,18 @@ object SunSpecDeviceModelFinder {
         }
 
         if (sunSpecStartAddress == null) {
-            throw ModbusException("Unable to find the needed SunS header at any of " + SUNSPEC_STANDARD_START_PHYSICAL_ADDRESS.contentToString())
+            throw ModbusException(
+                "Unable to find the needed SunS header at any of " + SUNSPEC_STANDARD_START_PHYSICAL_ADDRESS.contentToString(),
+            )
         }
         return Pair(sunSpecStartAddress, schemaDevice)
     }
 
-    class DeviceSunSpecModel(val address: Address, val id: Int, val registers: Int) {
-        override fun toString(): String {
-            return "DeviceSunSpecModel(@$address, id=$id, registers=$registers}"
-        }
+    class DeviceSunSpecModel(
+        val address: Address,
+        val id: Int,
+        val registers: Int,
+    ) {
+        override fun toString(): String = "DeviceSunSpecModel(@$address, id=$id, registers=$registers}"
     }
 }
