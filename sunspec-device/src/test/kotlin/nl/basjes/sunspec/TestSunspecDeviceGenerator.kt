@@ -23,11 +23,11 @@ import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.j2mod.ModbusDeviceJ2Mod
 import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
+import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
+import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
+import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.sunspec.device.SunspecDevice.generate
-import nl.basjes.sunspec.devices.DeviceOther
-import nl.basjes.sunspec.devices.DeviceSMASunnyBoy36
-import nl.basjes.sunspec.devices.DeviceSMASunnyBoy36_20250410
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import kotlin.test.Ignore
@@ -37,19 +37,21 @@ internal class TestSunspecDeviceGenerator {
     @Test
     @Throws(ModbusException::class)
     fun checkSunSpecDump() {
-        dumpSunSpec(DeviceSMASunnyBoy36.device)
+        dumpSunSpec(DeviceSMASunnyBoy36Dated20230810.device)
     }
 
     @Test
     @Throws(ModbusException::class)
     fun checkSunSpecDump2025() {
-        dumpSunSpec(DeviceSMASunnyBoy36_20250410.device)
+        val device = DeviceSMASunnyBoy36Dated20250518.device
+        device.logRequests = true
+        dumpSunSpec(device)
     }
 
     @Test
     @Throws(ModbusException::class)
     fun checkSunSpecDumpOther() {
-        dumpSunSpec(DeviceOther.device)
+        dumpSunSpec(DeviceFimerPVSDated20240722.device)
     }
 
     val hostname: String = "sunspec.iot.basjes.nl"

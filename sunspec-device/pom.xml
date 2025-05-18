@@ -86,6 +86,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>nl.basjes.modbus</groupId>
+      <artifactId>modbus-api-testing</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

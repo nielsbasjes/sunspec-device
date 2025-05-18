@@ -146,7 +146,7 @@ object SunspecDevice {
             // Special case is the header
             if (modelId == SUNS_HEADER_MODEL_ID) {
                 val sunSHeaderBlock = Utils.addSunSHeaderBlock(schemaDevice, deviceSunSpecModel.address)
-                setCommentOnFirstRegisterValue(sunSHeaderBlock, "SunS header")
+                setCommentOnFirstRegisterValue(sunSHeaderBlock, "--------------------------------------\nSunS header")
                 continue
             }
 
@@ -154,7 +154,7 @@ object SunspecDevice {
             if (modelId == SUNS_CHAIN_END_MODEL_ID) {
                 val endChainBlock = Utils.addSunSpecEndOfChainBlock(schemaDevice)
                 val (endChainId, _) = Utils.addModelHeaderFields(endChainBlock, modelAddress)
-                setCommentOnFirstRegisterValue(endChainId, "NO MORE MODELS")
+                setCommentOnFirstRegisterValue(endChainId, "--------------------------------------\nNO MORE MODELS")
                 break // This should be the last in the chain
             }
 
@@ -319,7 +319,7 @@ object SunspecDevice {
     private fun mappingString(point: Point): String {
         val mappingString = StringBuilder()
         for (symbol in point.symbols) {
-            mappingString.append(" ; ").append(symbol.value).append("->'").append(symbol.cleanName).append("'")
+            mappingString.append(" ; ${symbol.value}->'${symbol.cleanName}'")
         }
         return mappingString.toString()
     }
