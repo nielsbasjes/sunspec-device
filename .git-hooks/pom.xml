@@ -25,9 +25,11 @@
     <version>0.2.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>devtools</artifactId>
+  <packaging>pom</packaging>
 
-  <name>SunSpec Device : Dev tools</name>
+  <artifactId>githooks</artifactId>
+
+  <name>SunSpec Device : GitHooks</name>
 
   <description>The Modbus Schema Toolkit makes retrieving data from Modbus based devices a lot easier.</description>
   <url>https://modbus.basjes.nl</url>
@@ -61,7 +63,7 @@
               <arguments>
                 <argument>config</argument>
                 <argument>core.hooksPath</argument>
-                <argument>./devtools/git-hooks/</argument>
+                <argument>.git-hooks/</argument>
               </arguments>
             </configuration>
           </execution>

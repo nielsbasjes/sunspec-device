@@ -252,7 +252,7 @@
 <!--              <waitUntil>published</waitUntil>-->
               <waitUntil>validated</waitUntil>
               <excludeArtifacts>
-                <excludeArtifact>devtools</excludeArtifact>
+                <excludeArtifact>githooks</excludeArtifact>
               </excludeArtifacts>
             </configuration>
           </plugin>
@@ -300,7 +300,7 @@
           <version>${maven-artifact-plugin.version}</version>
           <configuration>
             <skipModules>
-              <skipModule>nl.basjes.sunspec/devtools</skipModule>
+              <skipModule>nl.basjes.sunspec/githooks</skipModule>
             </skipModules>
           </configuration>
         </plugin>
@@ -450,7 +450,7 @@
   </build>
 
   <modules>
-    <module>devtools</module>
+    <module>.git-hooks</module>
     <module>sunspec-model</module>
     <module>sunspec-device</module>
     <module>sunspec-schema-writer</module>
