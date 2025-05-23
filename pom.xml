@@ -73,7 +73,7 @@
     <sunspec-model-basedir>models-2024-11-15</sunspec-model-basedir>
     <!-- ========================================== -->
 
-    <git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+    <git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
     <version.copyright>Copyright (C) 2019-2025 Niels Basjes</version.copyright>
     <version.license>Apache 2.0</version.license>
     <version.url>${project.url}</version.url>
