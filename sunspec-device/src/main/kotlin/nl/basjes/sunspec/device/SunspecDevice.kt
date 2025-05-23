@@ -23,6 +23,7 @@ import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.get
 import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 import nl.basjes.modbus.schema.utils.StringTable
 import nl.basjes.sunspec.SUNSPEC_MODEL_ID_REGISTERS
