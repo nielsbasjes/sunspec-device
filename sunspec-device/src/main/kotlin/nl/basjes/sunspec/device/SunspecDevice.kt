@@ -17,20 +17,22 @@
 package nl.basjes.sunspec.device
 
 import nl.basjes.modbus.device.api.Address
+import nl.basjes.modbus.device.api.MODBUS_MAX_REGISTERS_PER_REQUEST
 import nl.basjes.modbus.device.api.ModbusDevice
 import nl.basjes.modbus.device.api.RegisterValue
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.schema.Block
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.get
-import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 import nl.basjes.modbus.schema.utils.StringTable
 import nl.basjes.sunspec.SUNSPEC_MODEL_ID_REGISTERS
 import nl.basjes.sunspec.SUNSPEC_MODEL_L_REGISTERS
 import nl.basjes.sunspec.SUNS_CHAIN_END_MODEL_ID
 import nl.basjes.sunspec.SUNS_HEADER_MODEL_ID
 import nl.basjes.sunspec.device.SunSpecDeviceModelFinder.findDeviceSunSpecModels
+import nl.basjes.sunspec.device.Utils.addModelHeaderFields
 import nl.basjes.sunspec.model.SunSpec
 import nl.basjes.sunspec.model.entities.Group
 import nl.basjes.sunspec.model.entities.Point
@@ -62,6 +64,7 @@ import nl.basjes.sunspec.model.entities.Point.Type.UINT_64
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Instant
+import java.util.Locale
 import java.util.TreeMap
 
 @Suppress("ktlint:standard:comment-wrapping", "ktlint:standard:max-line-length", "ktlint:standard:paren-spacing")
@@ -164,6 +167,7 @@ object SunspecDevice {
 
             if (sunSpecModel == null) {
                 LOG.fatal("Unable to get model for ID: {}", modelId)
+                createBlockForNonExistentModel(schemaDevice, modelId, modelLength, modelAddress)
                 continue
             }
 
@@ -183,7 +187,37 @@ object SunspecDevice {
                     .description(modelDescription)
                     .build()
 
-            addGroup(block, "", sunSpecModel.group, modelAddress, modelId, modelLength)
+            // This is the root of an old style model with a repeating group
+            val subGroupCount = if (sunSpecModel.group.groups.size == 1) { sunSpecModel.group.groups[0].count } else { "Computer says no" }
+            if (subGroupCount == null || subGroupCount == "0") {
+                val subGroup = sunSpecModel.group.groups[0]
+                if (subGroup.dataSize == 0) {
+                    throw ModbusException("SunSpec repeat block problem")
+                }
+
+                val count = (modelLength - sunSpecModel.group.dataSize) / subGroup.dataSize
+
+                // Check for rounding errors
+                require(sunSpecModel.group.dataSize + (subGroup.dataSize * count) == modelLength) {
+                    throw ModbusException(
+                        "SunSpec repeat block problem: ${sunSpecModel.group.dataSize} + (${subGroup.dataSize} * $count) == $modelLength)",
+                    )
+                }
+
+                // Add the Points that are directly in this model.
+                val nextFieldAddress = addGroupPoints(sunSpecModel.group, modelAddress, block, modelId, modelLength, "", true)
+                addGroup(
+                    block,
+                    "${subGroup.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}0_",
+                    subGroup,
+                    nextFieldAddress,
+                    modelId,
+                    null,
+                    false,
+                )
+            } else {
+                addGroup(block, "", sunSpecModel.group, modelAddress, modelId, modelLength, true)
+            }
         }
 
         if (!schemaDevice.initialize()) {
@@ -215,105 +249,173 @@ object SunspecDevice {
         return schemaDevice
     }
 
+    private fun addGroupPoints(group: Group, startFieldAddress: Address, block: Block, modelId: Int, modelLength: Int?, prefix: String, addComments: Boolean): Address {
+        var nextFieldAddress = startFieldAddress
+        var pointNrInModel = 0 // Needed for putting the right comment on the registers
+        var didFirstDataComment = false
+
+        val forceFetchGroup =
+            if (group.type == Group.Type.SYNC) {
+                // This means ALL points in this group must be fetched in a single modbus call
+                if (group.groups.isNotEmpty()) {
+                    throw ModbusSchemaParseException("It is impossible to do a SunSpec SYNC if there are sub groups")
+                }
+                true
+            } else {
+                false
+            }
+
+        val fetchGroupId = "<<Group SYNC for ${group.name} at ${nextFieldAddress.toCleanFormat()}>>"
+
+        for (point in group.points) {
+            pointNrInModel++
+            val field = createAndAddFieldToModel(block, nextFieldAddress, point, prefix)
+            if (forceFetchGroup) {
+                field.fetchGroup = fetchGroupId
+            }
+            nextFieldAddress = nextFieldAddress.increment(point.size)
+            if (addComments) {
+                if (point.isModelHeader) {
+                    if (point.name == "ID") {
+                        getFirstRegisterValue(field)?.let {
+                            it.comment =
+                                "--------------------------------------\n" +
+                                    "Model $modelId [Header @ ${it.address.toCleanFormat()}]: ${group.label}"
+                        }
+                    }
+                } else {
+                    if (!didFirstDataComment) {
+                        didFirstDataComment = true
+                        getFirstRegisterValue(field)?.let {
+                            it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
+                                it.address.increment((modelLength ?: 1)-1).toCleanFormat()
+                            }]: $modelLength registers"
+                        }
+                    }
+                }
+            }
+
+// This will comment each field
+//            getFirstRegisterValue(field)?.let {
+//                if (it.comment == null) {
+//                    it.comment = ""
+//                } else {
+//                    if (!it.comment.isNullOrBlank()) {
+//                        it.comment += "\n"
+//                    }
+//                }
+//                val endAddress = if (point.size>1) " - ${it.address.increment(point.size-1).toCleanFormat()}" else ""
+//                it.comment += "Field \"${field.id}\" [@ ${it.address.toCleanFormat()}${endAddress}]: ${point.size} registers : ${field.parsedExpression}"
+//            }
+        }
+        return nextFieldAddress
+    }
+
+    private fun determineCount(block: Block, countString: String?): Int {
+        // The "count" of a subgroup can be a number OR the NAME of the field which contains the number.
+        if (countString.isNullOrBlank()) {
+            return 1
+        }
+        try {
+            return countString.toInt()
+        } catch (_: NumberFormatException) {
+            val countField =
+                block.getField(countString)
+                    ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group")
+            countField.initialize()
+            countField.update()
+            val countValue =
+                countField.longValue
+                    ?: throw ModbusException("Unable to read the value of the count field named \"$countString\" for this group")
+            return Math.toIntExact(countValue)
+        }
+    }
+
     @Throws(ModbusException::class)
     private fun addGroup(
         block: Block,
         prefix: String,
         group: Group,
-        thisModelAddress: Address,
+        startFieldAddress: Address,
         modelId: Int,
         modelLength: Int?,
-    ) {
+        addComments: Boolean,
+    ): Address {
         // Add the Points that are directly in this model.
+        var nextFieldAddress = addGroupPoints(group, startFieldAddress, block, modelId, modelLength, prefix, addComments)
 
-        var pointCounter = 0
-        if (modelLength == null) {
-            // I.e. a multi level deep nested group
-            pointCounter = 3 // Always do the last in the switch below
+        // Any repeating subgroups?
+        if (group.groups.isEmpty()) {
+            return nextFieldAddress
         }
-        for (point in group.points) {
-            pointCounter++
-            val field = createAndAddFieldToModel(block, thisModelAddress, point, prefix)
 
-            when (pointCounter) {
-                // 1: The ID
-                1 -> {
-                    getFirstRegisterValue(field)?.let {
-                        it.comment =
-                            "--------------------------------------\n" +
-                            "Model $modelId [Header @ ${it.address.toCleanFormat()}]: ${group.label}"
-                    }
-                }
-
-                // 2: The Length
-                2 -> {}
-
-                // 3: The first data register
-                3 -> {
-                    getFirstRegisterValue(field)?.let {
-                        it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
-                            it.address.increment(modelLength!!).toCleanFormat()
-                        }]: $modelLength registers"
-                    }
-                }
-
-                else -> {}
-            }
-        }
+        var subGroupIndex = 0
         for (subGroup in group.groups) {
             // The "count" of a subgroup can be a number OR the NAME of the field which contains the number.
-            val countString = subGroup.count
-            var count = 0
-            if (countString != null) {
-                try {
-                    count = countString.toInt()
-                } catch (_: NumberFormatException) {
-                    val countField =
-                        block.getField(countString)
-                            ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group")
-                    countField.update()
-                    val countValue =
-                        countField.longValue
-                            ?: throw ModbusException("Unable to read the value of the count field named \"$countString\" for this group")
-                    count = Math.toIntExact(countValue)
-                }
-            }
+            val count = determineCount(block, subGroup.count)
 
-            // The older models have a fixed set of points and a repeating set.
-            // The number of repeats must be calculated from the sizes of the complete model, the fixed part and repeating part.
-            if (count == 0 && modelLength != null && group.groups.size == 1) {
-                if (group.dataSize == 0 || subGroup.dataSize == 0) {
-                    throw ModbusException("SunSpec repeat block problem")
-                }
-
-                count = (SUNSPEC_MODEL_ID_REGISTERS + SUNSPEC_MODEL_L_REGISTERS + modelLength - group.dataSize) / subGroup.dataSize
-
-                // Check for rounding errors
-                require(group.dataSize + (subGroup.dataSize * count) == modelLength) {
-                    throw ModbusException(
-                        "SunSpec repeat block problem: ${group.dataSize} + (${subGroup.dataSize} * $count) == $modelLength)",
-                    )
-                }
-            }
-
-            var subGroupPrefix = prefix
-            if (prefix.isEmpty()) {
-                subGroupPrefix = "R"
-            }
+            val prefix = "${prefix}${subGroup.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}"
 
             for (index in 0 until count) {
-                addGroup(
+                nextFieldAddress = addGroup(
                     block,
-                    subGroupPrefix + index + "_",
+                    if (subGroup.count == null) { "${prefix}_" } else { "${prefix}${index}_" },
                     subGroup,
-                    thisModelAddress.increment(
-                        SUNSPEC_MODEL_ID_REGISTERS + SUNSPEC_MODEL_L_REGISTERS + group.dataSize + (index * subGroup.dataSize),
-                    ),
+                    nextFieldAddress,
                     modelId,
                     null,
+                    false,
                 )
             }
+            subGroupIndex++
         }
+        return nextFieldAddress
+    }
+
+    private fun createBlockForNonExistentModel(schemaDevice: SchemaDevice, modelId: Int, modelLength: Int, modelAddress: Address) {
+        val block =
+            Block
+                .builder()
+                .schemaDevice(schemaDevice)
+                .id("Model $modelId")
+                .description("[Model $modelId]: Unknown (vendor specific?) model. No fields available.")
+                .build()
+        val (modelIdField, _) = addModelHeaderFields(block, modelAddress)
+
+        getFirstRegisterValue(modelIdField)?.let {
+            it.comment =
+                "--------------------------------------\n" +
+                    "Model $modelId [Header @ ${it.address.toCleanFormat()}]: Unknown (vendor specific?) model. No fields available."
+        }
+
+
+        var unknownAddress = modelAddress.increment(SUNSPEC_MODEL_ID_REGISTERS + SUNSPEC_MODEL_L_REGISTERS)
+        block.schemaDevice.getRegisterBlock(unknownAddress.addressClass)[unknownAddress].let {
+            it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
+                it.address.increment(modelLength-1).toCleanFormat()
+            }]: $modelLength registers"
+        }
+
+        var remainingRegisters = modelLength
+        var index = 0
+        do {
+            val registersForField =
+                if (remainingRegisters > MODBUS_MAX_REGISTERS_PER_REQUEST) {
+                    MODBUS_MAX_REGISTERS_PER_REQUEST
+                } else {
+                    remainingRegisters
+                }
+            Field
+                .builder()
+                .block(block)
+                .id("Unknown_$index")
+                .description("Unknown block of registers #$index")
+                .expression("hexstring(${unknownAddress.toCleanFormat()}#$registersForField)")
+                .build()
+            index++
+            unknownAddress = unknownAddress.increment(registersForField)
+            remainingRegisters -= registersForField
+        } while (remainingRegisters > MODBUS_MAX_REGISTERS_PER_REQUEST)
     }
 
     // ----------------------------------------------------------------------------------------------------
@@ -325,16 +427,7 @@ object SunspecDevice {
         return mappingString.toString()
     }
 
-    private fun Point.getCamelCaseName() = convertToCodeCompliantName(name, true)
-
-    private fun Point.getCamelCaseSfName() =
-        if (scalingFactor == null) {
-            null
-        } else {
-            convertToCodeCompliantName(scalingFactor!!, true)
-        }
-
-    private fun createAndAddFieldToModel(block: Block, modelBaseAddress: Address, point: Point, prefix: String): Field {
+    private fun createAndAddFieldToModel(block: Block, registerAddress: Address, point: Point, prefix: String): Field {
         val functionName: String
         val additionalArguments: String
 
@@ -388,19 +481,20 @@ object SunspecDevice {
             Field
                 .builder()
                 .block(block)
-                .id(prefix + point.getCamelCaseName())
+                .id(prefix + point.name)
                 .unit(point.units)
                 .immutable(point.mutable == Point.Mutable.IMMUTABLE)
 
         if (point.type == SUNSSF) {
-            fieldBuilder.description("[${block.id}](${point.name}): Scaling factor")
+//            fieldBuilder.description("[${block.id}](${point.name}): Scaling factor")
+            fieldBuilder.description("Scaling factor")
         } else {
-            val label =
-                if (point.label.isNullOrEmpty()) {
-                    "[${block.id}](${point.name}): ${point.description ?: ""}"
-                } else {
-                    "[${block.id}](${point.label}): ${point.description ?: ""}"
-                }
+            val label = point.description ?: ""
+//                if (point.label.isNullOrEmpty()) {
+//                    "[${block.id}](${point.name}): ${point.description ?: ""}"
+//                } else {
+//                    "[${block.id}](${point.label}): ${point.description ?: ""}"
+//                }
             fieldBuilder.description(label)
         }
 
@@ -412,14 +506,11 @@ object SunspecDevice {
             fieldBuilder.system(true).immutable(true)
         }
 
-        val registerAddress = modelBaseAddress.increment(point.offsetInGroup)
-
         var expression =
             functionName + "(" + registerAddress + (if (point.size == 1) "" else "#" + point.size) + additionalArguments + ")"
 
-        val camelCaseSfName: String? = point.getCamelCaseSfName()
-        if (!camelCaseSfName.isNullOrEmpty()) {
-            expression += " * (10^$camelCaseSfName)"
+        if (!point.scalingFactor.isNullOrEmpty()) {
+            expression += " * (10^${point.scalingFactor})"
         }
 
         if (point.type == TIMESTAMP) {

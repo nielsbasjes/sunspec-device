@@ -36,4 +36,8 @@ class Symbol(
     @SerialName("comments") val comments: List<String> = ArrayList(),
 ) {
     val cleanName = name.trim { it <= ' ' }.replace('-', '_').replace(' ', '_')
+    override fun toString(): String {
+        return "Symbol(name='$name', value=$value, label=$label)"
+    }
+
 }

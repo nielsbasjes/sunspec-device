@@ -28,7 +28,7 @@ object Utils {
             Block
                 .builder()
                 .schemaDevice(schemaDevice!!)
-                .id("SunSpecHeader")
+                .id("SunSpec Header")
                 .description("The header that starts the SunSpec model list")
                 .build()
 
@@ -48,7 +48,7 @@ object Utils {
         return Block
             .builder()
             .schemaDevice(schemaDevice!!)
-            .id("EndOfModelChain")
+            .id("SunSpec EndOfChain Model")
             .description("The final marker that closes the SunSpec model list")
             .build()
     }

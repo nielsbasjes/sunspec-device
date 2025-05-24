@@ -26,6 +26,7 @@ import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
 import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
+import nl.basjes.modbus.device.testcases.sunspec.EmulatedDER
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.sunspec.device.SunspecDevice.generate
 import org.apache.logging.log4j.LogManager
@@ -54,15 +55,23 @@ internal class TestSunspecDeviceGenerator {
         dumpSunSpec(DeviceFimerPVSDated20240722.device)
     }
 
+    @Test
+    @Throws(ModbusException::class)
+    fun checkSunSpecDumpEmulatedDER() {
+        dumpSunSpec(EmulatedDER.device)
+    }
+
     val hostname: String = "sunspec.iot.basjes.nl"
     val port: Int = MODBUS_STANDARD_TCP_PORT
     val unitId: Int = SUNSPEC_STANDARD_UNITID
+
 
     @Ignore("Requires real device")
     @Test
     @Throws(ModbusException::class)
     fun showRealSunSpecDevicePlc4J() {
         val connectionString = "modbus-tcp:tcp://$hostname:$port?unit-identifier=$unitId"
+        println("Connection string: $connectionString")
         try {
             ModbusDevicePlc4j(connectionString).use { modbusDevice ->
                 dumpSunSpec(modbusDevice)
@@ -94,7 +103,7 @@ internal class TestSunspecDeviceGenerator {
         fun dumpSunSpec(modbusDevice: ModbusDevice) {
             // For SunSpec we generate the Schema based upon the SunSpec specification and
             // the exact capabilities of the device at hand.
-            val schemaDevice = generate(modbusDevice, "")
+            val schemaDevice = generate(modbusDevice, "Testing Testing")
 
             LOG.error("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 
@@ -114,7 +123,7 @@ internal class TestSunspecDeviceGenerator {
 
             LOG.error("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
-            //        LOG.info("\n{}", schemaDevice.toTable(false));
+            LOG.info("\n{}", schemaDevice.toTable(false));
         }
     }
 }
