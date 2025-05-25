@@ -98,6 +98,11 @@ object SunspecDevice {
          * A human-readable description of this schema device.
          */
         description: String = "",
+        /**
+         * Some devices have non-standard models in their SunSpec.
+         * With this you can skip them in the generated schema device.
+         */
+        skipUnknownModels: Boolean = false,
     ): SchemaDevice? {
         // We need 2 things:
         // - The official SunSpec schemas
@@ -167,7 +172,9 @@ object SunspecDevice {
 
             if (sunSpecModel == null) {
                 LOG.fatal("Unable to get model for ID: {}", modelId)
-                createBlockForNonExistentModel(schemaDevice, modelId, modelLength, modelAddress)
+                if (!skipUnknownModels) {
+                    createBlockForNonExistentModel(schemaDevice, modelId, modelLength, modelAddress)
+                }
                 continue
             }
 
@@ -176,7 +183,8 @@ object SunspecDevice {
                 if (sunSpecModel.group.description.isNullOrBlank()) {
                     "[Model " + sunSpecModel.id + "]:" + sunSpecModel.group.label
                 } else {
-                    "[Model " + sunSpecModel.id + "]:" + sunSpecModel.group.label + ": " + sunSpecModel.group.description
+//                    "[Model " + sunSpecModel.id + "]:" +
+                    sunSpecModel.group.label + ": " + sunSpecModel.group.description
                 }
 
             val block =

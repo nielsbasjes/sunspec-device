@@ -36,27 +36,27 @@ import kotlin.test.Test
 
 internal class TestSunspecDeviceGenerator {
     @Test
-    @Throws(ModbusException::class)
     fun checkSunSpecDump() {
-        dumpSunSpec(DeviceSMASunnyBoy36Dated20230810.device)
-    }
-
-    @Test
-    @Throws(ModbusException::class)
-    fun checkSunSpecDump2025() {
-        val device = DeviceSMASunnyBoy36Dated20250518.device
-        device.logRequests = true
+        val device = DeviceSMASunnyBoy36Dated20230810.device
+        device.logRequests = false
         dumpSunSpec(device)
     }
 
     @Test
-    @Throws(ModbusException::class)
-    fun checkSunSpecDumpOther() {
-        dumpSunSpec(DeviceFimerPVSDated20240722.device)
+    fun checkSunSpecDump2025() {
+        val device = DeviceSMASunnyBoy36Dated20250518.device
+        device.logRequests = false
+        dumpSunSpec(device)
     }
 
     @Test
-    @Throws(ModbusException::class)
+    fun checkSunSpecDumpOther() {
+        val device = DeviceFimerPVSDated20240722.device
+        device.logRequests = false
+        dumpSunSpec(device)
+    }
+
+    @Test
     fun checkSunSpecDumpEmulatedDER() {
         dumpSunSpec(EmulatedDER.device)
     }
@@ -68,7 +68,6 @@ internal class TestSunspecDeviceGenerator {
 
     @Ignore("Requires real device")
     @Test
-    @Throws(ModbusException::class)
     fun showRealSunSpecDevicePlc4J() {
         val connectionString = "modbus-tcp:tcp://$hostname:$port?unit-identifier=$unitId"
         println("Connection string: $connectionString")
@@ -83,7 +82,6 @@ internal class TestSunspecDeviceGenerator {
 
     @Ignore("Requires real device")
     @Test
-    @Throws(ModbusException::class)
     fun showRealSunSpecDeviceJ2Mod() {
         val master: AbstractModbusMaster = ModbusTCPMaster(hostname, port)
         try {
@@ -99,7 +97,6 @@ internal class TestSunspecDeviceGenerator {
     companion object {
         private val LOG: Logger = LogManager.getLogger()
 
-        @Throws(ModbusException::class)
         fun dumpSunSpec(modbusDevice: ModbusDevice) {
             // For SunSpec we generate the Schema based upon the SunSpec specification and
             // the exact capabilities of the device at hand.
@@ -118,7 +115,7 @@ internal class TestSunspecDeviceGenerator {
             schemaDevice.createTestsUsingCurrentRealData()
 
             //        LOG.warn("\n{}", LoaderKt.toSchema(schemaDevice.getTests().get(0).getRegisterBlocks().get(0)));
-            LOG.warn("\n{}", schemaDevice.toYaml())
+//            LOG.warn("\n{}", schemaDevice.toYaml())
 //            LOG.warn("\n{}", schemaDevice.tests.first().registerBlocks.first().toSchema())
 
             LOG.error("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")

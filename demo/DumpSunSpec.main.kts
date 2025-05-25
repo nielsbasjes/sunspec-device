@@ -66,14 +66,10 @@ fun main(vararg args: String) {
     ModbusDevicePlc4j(connectionString).use { modbusDevice ->
         println(" done")
 
-        val sunSpec = SunspecDevice.generate(modbusDevice) ?: throw ModbusException("Unable to generate SunSpec device")
+        val sunSpec = SunspecDevice.generate(modbusDevice, true) ?: throw ModbusException("Unable to generate SunSpec device")
 
         // Get everything
-//        sunSpec.updateAll()
-        val field = sunSpec["Model 704"]["PFWInj_Ext"] ?: throw ModbusException("Unable to get field")
-        field.fetchGroup = ""
-        require(field.fetchGroupIsDefault)
-        field.update()
+        sunSpec.updateAll()
 
         // Convert all available values into a test scenario
         sunSpec.createTestsUsingCurrentRealData()
