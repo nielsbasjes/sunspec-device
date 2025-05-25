@@ -20,7 +20,7 @@
 
   <groupId>nl.basjes.sunspec</groupId>
   <artifactId>sunspec-device-parent</artifactId>
-  <version>0.3.0</version>
+  <version>0.3.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>SunSpec Device :</name>
@@ -33,7 +33,7 @@
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
 
     <!-- Needed to make the build reproducible https://reproducible-builds.org/ -->
-    <project.build.outputTimestamp>2025-05-25T15:46:29Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-05-25T15:47:29Z</project.build.outputTimestamp>
 
     <java.version>11</java.version>
     <kotlin.version>2.1.21</kotlin.version>
@@ -531,7 +531,7 @@
     <url>https://github.com/nielsbasjes/sunspec-device</url>
     <connection>scm:git:https://github.com/nielsbasjes/sunspec-device.git</connection>
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
-    <tag>v0.3.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
 </project>
