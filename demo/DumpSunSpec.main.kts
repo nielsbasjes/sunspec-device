@@ -66,7 +66,7 @@ fun main(vararg args: String) {
     ModbusDevicePlc4j(connectionString).use { modbusDevice ->
         println(" done")
 
-        val sunSpec = SunspecDevice.generate(modbusDevice, true) ?: throw ModbusException("Unable to generate SunSpec device")
+        val sunSpec = SunspecDevice.generate(modbusDevice, "Demo", true) ?: throw ModbusException("Unable to generate SunSpec device")
 
         // Get everything
         sunSpec.updateAll()
