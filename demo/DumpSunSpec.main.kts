@@ -27,7 +27,6 @@
 
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
-import nl.basjes.modbus.schema.get
 import nl.basjes.modbus.schema.toTable
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.sunspec.SUNSPEC_STANDARD_UNITID
