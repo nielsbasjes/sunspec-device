@@ -27,6 +27,11 @@ import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
 import nl.basjes.modbus.device.testcases.sunspec.EmulatedDER
+import nl.basjes.modbus.schema.Block
+import nl.basjes.modbus.schema.Field
+import nl.basjes.modbus.schema.SchemaDevice
+import nl.basjes.modbus.schema.get
+import nl.basjes.modbus.schema.toTable
 import nl.basjes.modbus.schema.toYaml
 import nl.basjes.sunspec.device.SunspecDevice.generate
 import org.apache.logging.log4j.LogManager
@@ -58,13 +63,14 @@ internal class TestSunspecDeviceGenerator {
 
     @Test
     fun checkSunSpecDumpEmulatedDER() {
-        dumpSunSpec(EmulatedDER.device)
+        val device = EmulatedDER.device
+        device.logRequests = true
+        dumpSunSpec(device)
     }
 
     val hostname: String = "sunspec.iot.basjes.nl"
     val port: Int = MODBUS_STANDARD_TCP_PORT
     val unitId: Int = SUNSPEC_STANDARD_UNITID
-
 
     @Ignore("Requires real device")
     @Test
@@ -120,7 +126,7 @@ internal class TestSunspecDeviceGenerator {
 
             LOG.error("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
-            LOG.info("\n{}", schemaDevice.toTable(false));
+            LOG.info("\n{}", schemaDevice.toTable());
         }
     }
 }
