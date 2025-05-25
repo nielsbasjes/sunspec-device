@@ -501,13 +501,13 @@ object SunspecDevice {
         // Some fields are considered to be system fields (i.e. not directly usable applications fields)
         if (point.type == SUNSSF ||
             point.type == PAD ||
-            (point.isImmutable() && (point.name == "ID" || point.name == "L"))
+            point.isModelHeader
         ) {
             fieldBuilder.system(true).immutable(true)
         }
 
         var expression =
-            functionName + "(" + registerAddress + (if (point.size == 1) "" else "#" + point.size) + additionalArguments + ")"
+            functionName + "(" + registerAddress + (if (point.size == 1) "" else "#${point.size}" ) + additionalArguments + ")"
 
         if (!point.scalingFactor.isNullOrEmpty()) {
             expression += " * (10^${point.scalingFactor})"
@@ -560,9 +560,9 @@ object SunspecDevice {
         // These would normally have symbols but do not always have any because some are vendor specific
         TYPE_MAPPINGS_NO_SYMBOLS[ENUM_16] =       TypeMapping("uint16",     "; 0xFFFF"                                                    )
         TYPE_MAPPINGS_NO_SYMBOLS[ENUM_32] =       TypeMapping("uint32",     "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping("uint16",     "; 0xFFFF"                                                    )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping("uint32",     "; 0xFFFF 0xFFFF"                                             )
-        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping("uint64",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_16] =   TypeMapping("bitset",     "; 0xFFFF"                                                    )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_32] =   TypeMapping("bitset",     "; 0xFFFF 0xFFFF"                                             )
+        TYPE_MAPPINGS_NO_SYMBOLS[BITFIELD_64] =   TypeMapping("bitset",     "; 0xFFFF 0xFFFF 0xFFFF 0xFFFF"                               ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
 
         TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_16] =     TypeMapping("enum",       "; 0xFFFF"                                                    )
         TYPE_MAPPINGS_WITH_SYMBOLS[ENUM_32] =     TypeMapping("enum",       "; 0xFFFF 0xFFFF"                                             ) // TODO: NOT USED IN 2024 SUNSPEC IN ANY REAL MODEL SO NOT TESTED
