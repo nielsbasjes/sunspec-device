@@ -437,6 +437,8 @@ object SunspecDevice {
         return mappingString.toString()
     }
 
+    val y2kEpochOffset = Instant.parse("2000-01-01T00:00:00.000Z").toEpochMilli()
+
     private fun createAndAddFieldToModel(block: Block, registerAddress: Address, point: Point, prefix: String): Field {
         val functionName: String
         val additionalArguments: String
@@ -496,16 +498,9 @@ object SunspecDevice {
                 .immutable(point.mutable == Point.Mutable.IMMUTABLE)
 
         if (point.type == SUNSSF) {
-//            fieldBuilder.description("[${block.id}](${point.name}): Scaling factor")
             fieldBuilder.description("Scaling factor")
         } else {
-            val label = point.description ?: ""
-//                if (point.label.isNullOrEmpty()) {
-//                    "[${block.id}](${point.name}): ${point.description ?: ""}"
-//                } else {
-//                    "[${block.id}](${point.label}): ${point.description ?: ""}"
-//                }
-            fieldBuilder.description(label)
+            ( point.description ?: point.label ) ?.let { fieldBuilder.description( it ) }
         }
 
         // Some fields are considered to be system fields (i.e. not directly usable applications fields)
@@ -524,7 +519,6 @@ object SunspecDevice {
         }
 
         if (point.type == TIMESTAMP) {
-            val y2kEpochOffset = Instant.parse("2000-01-01T00:00:00.000Z").toEpochMilli()
             expression = "($expression*1000+$y2kEpochOffset)"
         }
 
