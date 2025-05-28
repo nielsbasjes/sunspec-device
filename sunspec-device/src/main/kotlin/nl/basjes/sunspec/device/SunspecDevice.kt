@@ -213,16 +213,18 @@ object SunspecDevice {
                 }
 
                 // Add the Points that are directly in this model.
-                val nextFieldAddress = addGroupPoints(sunSpecModel.group, modelAddress, block, modelId, modelLength, "", true)
-                addGroup(
-                    block,
-                    "${subGroup.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}0_",
-                    subGroup,
-                    nextFieldAddress,
-                    modelId,
-                    null,
-                    false,
-                )
+                var nextFieldAddress = addGroupPoints(sunSpecModel.group, modelAddress, block, modelId, modelLength, "", true)
+                for (subGroupIndex in 0 until count) {
+                    nextFieldAddress = addGroup(
+                        block,
+                        "${subGroup.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }}_${subGroupIndex}_",
+                        subGroup,
+                        nextFieldAddress,
+                        modelId,
+                        null,
+                        false,
+                    )
+                }
             } else {
                 addGroup(block, "", sunSpecModel.group, modelAddress, modelId, modelLength, true)
             }
@@ -367,7 +369,7 @@ object SunspecDevice {
             for (index in 0 until count) {
                 nextFieldAddress = addGroup(
                     block,
-                    if (subGroup.count == null) { "${prefix}_" } else { "${prefix}${index}_" },
+                    if (subGroup.count == null) { "${prefix}_" } else { "${prefix}_${index}_" },
                     subGroup,
                     nextFieldAddress,
                     modelId,
