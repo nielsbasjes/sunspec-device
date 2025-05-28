@@ -64,6 +64,11 @@ object Utils {
                     .replace(" +".toRegex(), " ")
                 point.description = description
             }
+
+            // Fix Celsius unit to be correct
+            if (point.units == "C") {
+                point.units = "°C"
+            }
         }
     }
 

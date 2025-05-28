@@ -37,7 +37,7 @@ class Point (
 
     /** The NAME of the scaling factor point OR a [-10;10] integer OR null */
     @SerialName("sf")           val scalingFactor: String? = null,
-    @SerialName("units")        val units: String? = null,
+    @SerialName("units")        var units: String? = null,
     @SerialName("access")       val access: Access = Access.READONLY,
     @SerialName("mandatory")    val mandatory: Mandatory = Mandatory.OPTIONAL,
 
