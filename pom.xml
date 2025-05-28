@@ -64,7 +64,7 @@
 
     <log4j.version>2.24.3</log4j.version>
 
-    <modbus-schema.version>0.5.0</modbus-schema.version>
+    <modbus-schema.version>0.5.1</modbus-schema.version>
 
     <!-- ========================================== -->
     <!-- ========== SunSpec Version info ========== -->
