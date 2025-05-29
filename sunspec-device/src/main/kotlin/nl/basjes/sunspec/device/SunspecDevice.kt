@@ -32,7 +32,6 @@ import nl.basjes.sunspec.SUNSPEC_MODEL_L_REGISTERS
 import nl.basjes.sunspec.SUNS_CHAIN_END_MODEL_ID
 import nl.basjes.sunspec.SUNS_HEADER_MODEL_ID
 import nl.basjes.sunspec.device.SunSpecDeviceModelFinder.findDeviceSunSpecModels
-import nl.basjes.sunspec.device.Utils.addModelHeaderFields
 import nl.basjes.sunspec.model.SunSpec
 import nl.basjes.sunspec.model.entities.Group
 import nl.basjes.sunspec.model.entities.Point
@@ -181,10 +180,9 @@ object SunspecDevice {
             // Create and add a new Block for this SunSpec model.
             val modelDescription =
                 if (sunSpecModel.group.description.isNullOrBlank()) {
-                    "[Model " + sunSpecModel.id + "]:" + sunSpecModel.group.label
+                    "[Model " + sunSpecModel.id + "]: " + (sunSpecModel.group.label ?: "Undocumented model")
                 } else {
-//                    "[Model " + sunSpecModel.id + "]:" +
-                    sunSpecModel.group.label + ": " + sunSpecModel.group.description
+                    "[Model " + sunSpecModel.id + "]: " + sunSpecModel.group.description
                 }
 
             val block =
@@ -390,7 +388,7 @@ object SunspecDevice {
                 .id("Model $modelId")
                 .description("[Model $modelId]: Unknown (vendor specific?) model. No fields available.")
                 .build()
-        val (modelIdField, _) = addModelHeaderFields(block, modelAddress)
+        val (modelIdField, _) = Utils.addModelHeaderFields(block, modelAddress)
 
         getFirstRegisterValue(modelIdField)?.let {
             it.comment =
