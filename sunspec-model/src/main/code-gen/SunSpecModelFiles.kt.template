@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package nl.basjes.sunspec
+package nl.basjes.sunspec
 
 val ALL_SUNSPEC_FILES_LIST = listOf(
     "###model-list###"

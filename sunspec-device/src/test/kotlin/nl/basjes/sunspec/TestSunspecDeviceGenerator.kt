@@ -27,12 +27,7 @@ import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
 import nl.basjes.modbus.device.testcases.sunspec.EmulatedDER
-import nl.basjes.modbus.schema.Block
-import nl.basjes.modbus.schema.Field
-import nl.basjes.modbus.schema.SchemaDevice
-import nl.basjes.modbus.schema.get
 import nl.basjes.modbus.schema.toTable
-import nl.basjes.modbus.schema.toYaml
 import nl.basjes.sunspec.device.SunspecDevice.generate
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -41,7 +36,7 @@ import kotlin.test.Test
 
 internal class TestSunspecDeviceGenerator {
     @Test
-    fun checkSunSpecDump() {
+    fun checkSunSpecDump2023() {
         val device = DeviceSMASunnyBoy36Dated20230810.device
         device.logRequests = false
         dumpSunSpec(device)
