@@ -46,15 +46,15 @@ import java.time.Instant
 import java.util.Timer
 import java.util.TimerTask
 
-val modbusIp      :String = "sunspec.iot.basjes.nl"
-val modbusPort    :Int    = 502 // The default MODBUS TCP port
-val modbusUnit    :Int    = 126 // SMA uses 126, other vendor can differ
+val modbusIp             :String = "sunspec.iot.basjes.nl"
+val modbusPort           :Int    = 502 // The default MODBUS TCP port
+val modbusUnit           :Int    = 126 // SMA uses 126, other vendor can differ
 
-val databaseUrl   :String? = null // "https://influxdb.iot.basjes.nl"
-val databaseName  :String? = null // "Solar"
-val databaseToken :String? = null // Put your token here as a String
-val databaseOrg   :String? = null // "Some org"
-val databaseBucket:String? = null // "Some bucket"
+val databaseUrl          :String? = "http://localhost:8181"
+val databaseToken        :String? = "apiv3_Something"
+val databaseOrg          :String? = "basjes" // "Some org"
+val databaseBucket       :String? = "energy" // The influxDB commands call this the database, the V2 API calls it the bucket.
+val databaseMeasurement  :String? = "solar"  // Sometimes called the database table
 
 val connectionString = "modbus-tcp:tcp://$modbusIp:$modbusPort?unit-identifier=$modbusUnit"
 
@@ -71,11 +71,11 @@ ModbusDevicePlc4j(connectionString).use { modbusDevice ->
 //    exitProcess(0)
 
     if (
-        databaseUrl     == null ||
-        databaseToken   == null ||
-        databaseName    == null ||
-        databaseOrg     == null ||
-        databaseBucket  == null
+        databaseUrl         == null ||
+        databaseToken       == null ||
+        databaseOrg         == null ||
+        databaseBucket      == null ||
+        databaseMeasurement == null
     ) {
         println("No database, outputting to console")
         runLoop(sunSpec, null, "console")
@@ -93,14 +93,14 @@ ModbusDevicePlc4j(connectionString).use { modbusDevice ->
                     System.err.println("Error pinging server.")
                     return
                 }
-                runLoop(sunSpec, influxDBClient.writeApiBlocking, databaseName)
+                runLoop(sunSpec, influxDBClient.writeApiBlocking, databaseMeasurement)
             }
     }
 }
 
 fun fieldOrFail(field:Field?) = field ?: throw ModbusException("The desired field does not exist")
 
-fun runLoop(device: SchemaDevice, writeApi: WriteApiBlocking?, databaseName: String) {
+fun runLoop(device: SchemaDevice, writeApi: WriteApiBlocking?, databaseMeasurement: String) {
 
     // These are always needed as tags for the data in InfluxDB
     val manufacturer = fieldOrFail(device["Model 1"]["Mn"])
@@ -160,7 +160,7 @@ fun runLoop(device: SchemaDevice, writeApi: WriteApiBlocking?, databaseName: Str
                     device.update()
                     val point: Point =
                         Point
-                            .measurement(databaseName)
+                            .measurement(databaseMeasurement)
                             // We are rounding the timestamp to seconds to make the graphs in influxdb work a bit better
                             .time(Instant.ofEpochSecond(Instant.now().epochSecond), WritePrecision.S)
                             .addTag("Manufacturer",  manufacturer.stringValue ?: "Unknown")
@@ -182,7 +182,7 @@ fun runLoop(device: SchemaDevice, writeApi: WriteApiBlocking?, databaseName: Str
                     if (writeApi == null) {
                         println(point.toLineProtocol())
                     } else {
-                        println("Writing to influxDB")
+                        println("Writing to influxDB: ${point.time}")
                         writeApi.writePoint(point)
                     }
                 } catch (e: Exception) {
