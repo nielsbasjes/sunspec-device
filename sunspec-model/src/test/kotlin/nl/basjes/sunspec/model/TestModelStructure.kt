@@ -60,11 +60,21 @@ internal class TestModelStructure {
         val points: List<Point> = group.points
         val allPointNames: List<String> =
             points
+                .filter { it.type != Point.Type.PAD }
                 .map { it.name }
                 .filter { it.isNotBlank() } // Some Points (padding) do not return a camelcase name.
                 .sorted()
         val allPointNamesUnique: List<String> = allPointNames.distinct().sorted()
         assertEquals(allPointNamesUnique, allPointNames, "Duplicate CamelCase names in model " + group.name)
+
+        val allPointLabels: List<String> =
+            points
+                .filter { it.type != Point.Type.PAD }
+                .map { it.label ?: it.name }
+                .filter { it.isNotBlank() } // Some Points (padding) do not have a label.
+                .sorted()
+        val allPointLabelsUnique: List<String> = allPointLabels.distinct().sorted()
+        assertEquals(allPointLabelsUnique, allPointLabels, "Duplicate CamelCase labels in model " + group.name)
 
         group.groups.forEach(this::checkAllCodeNamesAreUnique)
     }
