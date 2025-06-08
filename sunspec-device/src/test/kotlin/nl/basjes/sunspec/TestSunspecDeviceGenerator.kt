@@ -26,6 +26,7 @@ import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
 import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
+import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250608
 import nl.basjes.modbus.device.testcases.sunspec.EmulatedDER
 import nl.basjes.modbus.schema.toTable
 import nl.basjes.sunspec.device.SunspecDevice.generate
@@ -45,6 +46,13 @@ internal class TestSunspecDeviceGenerator {
     @Test
     fun checkSunSpecDump2025() {
         val device = DeviceSMASunnyBoy36Dated20250518.device
+        device.logRequests = false
+        dumpSunSpec(device)
+    }
+
+    @Test
+    fun checkSunSpecDump2025Night() {
+        val device = DeviceSMASunnyBoy36Dated20250608.device
         device.logRequests = false
         dumpSunSpec(device)
     }
