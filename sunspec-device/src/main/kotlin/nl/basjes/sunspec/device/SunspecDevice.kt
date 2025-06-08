@@ -492,13 +492,26 @@ object SunspecDevice {
                 .builder()
                 .block(block)
                 .id(prefix + point.name)
-                .unit(point.units)
                 .immutable(point.mutable == Point.Mutable.IMMUTABLE)
 
+        // Add the unit if available
+        if (!point.units.isNullOrBlank()) {
+            fieldBuilder
+                .unit(point.units)
+        }
+
+        // Set the descriptions
         if (point.type == SUNSSF) {
             fieldBuilder.description("Scaling factor")
         } else {
-            ( point.description ?: point.label ) ?.let { fieldBuilder.description( it ) }
+            point.label ?. let { fieldBuilder.shortDescription(it) }
+            val description = point.description ?: point.label ?: point.name
+
+            if (point.type == TIMESTAMP) {
+                fieldBuilder.description("$description Converted to standard UNIX Epoch in Milliseconds.")
+            } else {
+                fieldBuilder.description(description)
+            }
         }
 
         // Some fields are considered to be system fields (i.e. not directly usable applications fields)
@@ -509,6 +522,7 @@ object SunspecDevice {
             fieldBuilder.system(true).immutable(true)
         }
 
+        // Build the expression for the field
         var expression =
             functionName + "(" + registerAddress + (if (point.size == 1) "" else "#${point.size}" ) + additionalArguments + ")"
 

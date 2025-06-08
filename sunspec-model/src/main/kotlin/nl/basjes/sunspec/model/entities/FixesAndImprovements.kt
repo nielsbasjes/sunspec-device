@@ -92,7 +92,6 @@ object FixesAndImprovements {
         // Letting it fail hard here to ensure it is always valid
         require(point.type == Point.Type.UINT_32) { "Any type that should be a Timestamp MUST be in the schema as a uint32" }
         point.type = Point.Type.TIMESTAMP
-        point.description += " Converted to standard UNIX Epoch in Milliseconds."
     }
 
     private fun markTimestampFields(model: SunSpecModel) {
