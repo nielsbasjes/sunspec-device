@@ -44,7 +44,7 @@ class SunSpecModel (
     val cleanComments     = comments    ?: group.comments
 
     fun init() {
-        Utils.fixProblemsInStandardSunSpec(this)
+        FixesAndImprovements.fixProblemsInStandardSunSpec(this)
 
         // Mark the 2 model header points as such.
         if (group.points.size >= 2) {

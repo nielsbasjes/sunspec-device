@@ -16,7 +16,7 @@
  */
 package nl.basjes.sunspec.model.entities
 
-object Utils {
+object FixesAndImprovements {
     /**
      * Various fixes to make the SunSpec usable in code.
      *
@@ -65,9 +65,11 @@ object Utils {
                 point.description = description
             }
 
-            // Fix Celsius unit to be correct
-            if (point.units == "C") {
-                point.units = "°C"
+            // Rewrite some of the provided units.
+            point.units = when (point.units){
+                "C"   -> "°C"
+//                "Pct" -> "%"
+                else -> point.units
             }
         }
     }
