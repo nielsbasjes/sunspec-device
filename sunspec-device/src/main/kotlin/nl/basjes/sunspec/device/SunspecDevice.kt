@@ -179,19 +179,24 @@ object SunspecDevice {
 
             // Create and add a new Block for this SunSpec model.
             val modelDescription =
-                if (sunSpecModel.group.description.isNullOrBlank()) {
+                if (sunSpecModel.cleanDescription.isNullOrBlank()) {
                     "[Model " + sunSpecModel.id + "]: " + (sunSpecModel.group.label ?: "Undocumented model")
                 } else {
                     "[Model " + sunSpecModel.id + "]: " + sunSpecModel.group.description
                 }
 
-            val block =
+            val blockBuilder =
                 Block
                     .builder()
                     .schemaDevice(schemaDevice)
                     .id("Model " + sunSpecModel.id)
                     .description(modelDescription)
-                    .build()
+
+            val blockLabel = sunSpecModel.cleanLabel
+            if (!blockLabel.isNullOrBlank()) {
+                blockBuilder.shortDescription(blockLabel)
+            }
+            val block = blockBuilder.build()
 
             // This is the root of an old style model with a repeating group
             val subGroupCount = if (sunSpecModel.group.groups.size == 1) { sunSpecModel.group.groups[0].count } else { "Computer says no" }
@@ -387,6 +392,7 @@ object SunspecDevice {
                 .schemaDevice(schemaDevice)
                 .id("Model $modelId")
                 .description("[Model $modelId]: Unknown (vendor specific?) model. No fields available.")
+                .shortDescription("Unknown model: $modelId.")
                 .build()
         val (modelIdField, _) = Utils.addModelHeaderFields(block, modelAddress)
 
