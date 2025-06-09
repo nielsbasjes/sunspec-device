@@ -19,7 +19,7 @@
  */
 
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.4.2-SNAPSHOT")
-@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.6.1-SNAPSHOT")
+@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.7.0")
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:0.6.1")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-client-jvm:0.6.1")
@@ -29,6 +29,7 @@
 import de.kempmobil.ktor.mqtt.MqttClient
 import de.kempmobil.ktor.mqtt.PublishRequest
 import de.kempmobil.ktor.mqtt.QoS
+import de.kempmobil.ktor.mqtt.TimeoutException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -226,6 +227,8 @@ fun runLoop(device: SchemaDevice, mqttClient: MqttClient?, mqttTopic: String) {
                         }
                     }
 
+                } catch (e: TimeoutException) {
+                    System.err.println("Got a TimeoutException from MQTT (ignoring): ${e.message}")
                 } catch (e: Exception) {
                     System.err.println("Stopping because of exception: ${e.message}")
                     cancel()
@@ -305,11 +308,9 @@ mqtt:
                 name += " - "
                 if(it.id.contains("_")) {
                     name += it.id
-                        .replaceFirst("_", "[").replaceFirst("_", "].")
-                        .replaceFirst("_", "[").replaceFirst("_", "].")
-                        .replaceFirst("_", "[").replaceFirst("_", "].")
-                        .replaceFirst("_", "[").replaceFirst("_", "].")
-                    if (!it.id.endsWith("_${it.shortDescription}")) {
+                        .replace(Regex("_([0-9]+)_"), "[$1].")
+                        .replace("_", ".")
+                    if (!it.id.endsWith(it.shortDescription)) {
                         name += " - ${it.shortDescription}"
                     }
                 } else {
