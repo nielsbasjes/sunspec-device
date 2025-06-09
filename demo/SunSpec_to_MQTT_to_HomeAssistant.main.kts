@@ -18,7 +18,7 @@
  *
  */
 
-@file:DependsOn("nl.basjes.sunspec:sunspec-device:0.4.2-SNAPSHOT")
+@file:DependsOn("nl.basjes.sunspec:sunspec-device:0.5.0")
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.7.0")
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:0.6.1")
