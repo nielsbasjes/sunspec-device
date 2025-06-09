@@ -21,7 +21,7 @@
   <parent>
     <groupId>nl.basjes.sunspec</groupId>
     <artifactId>sunspec-device-parent</artifactId>
-    <version>0.5.0</version>
+    <version>0.5.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>sunspec-device</artifactId>
@@ -140,7 +140,7 @@
     <url>https://github.com/nielsbasjes/sunspec-device</url>
     <connection>scm:git:https://github.com/nielsbasjes/sunspec-device.git</connection>
     <developerConnection>scm:git:file:///${project.basedir}</developerConnection>
-    <tag>v0.5.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
 </project>
