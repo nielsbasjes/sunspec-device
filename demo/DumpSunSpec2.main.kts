@@ -19,7 +19,7 @@
  */
 
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.4.1")
-@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.6.0")
+@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.7.0")
 
 import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
 import nl.basjes.modbus.device.exception.ModbusException
