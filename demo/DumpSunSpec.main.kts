@@ -20,7 +20,7 @@
 
 @file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.5.0")
-@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.7.0")
+@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.8.0")
 @file:DependsOn("args4j:args4j:2.37")
 @file:DependsOn("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.0")
 @file:DependsOn("org.apache.logging.log4j:log4j-core:2.25.0")
