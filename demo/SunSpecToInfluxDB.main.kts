@@ -18,7 +18,7 @@
  *
  */
 
-@file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
+@file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.5.0")
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.8.0")
 @file:DependsOn("com.influxdb:influxdb-client-java:7.3.0")
