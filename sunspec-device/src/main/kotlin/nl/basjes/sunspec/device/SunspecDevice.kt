@@ -60,6 +60,7 @@ import nl.basjes.sunspec.model.entities.Point.Type.TIMESTAMP
 import nl.basjes.sunspec.model.entities.Point.Type.UINT_16
 import nl.basjes.sunspec.model.entities.Point.Type.UINT_32
 import nl.basjes.sunspec.model.entities.Point.Type.UINT_64
+import nl.basjes.sunspec.model.entities.SunSpecModel
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.Instant
@@ -198,6 +199,8 @@ object SunspecDevice {
             }
             val block = blockBuilder.build()
 
+            val pointNamesThatAreReferenced = collectPointNamesThatAreReferenced(sunSpecModel)
+
             // This is the root of an old style model with a repeating group
             val subGroupCount = if (sunSpecModel.group.groups.size == 1) { sunSpecModel.group.groups[0].count } else { "Computer says no" }
             if (subGroupCount == null || subGroupCount == "0") {
@@ -216,7 +219,16 @@ object SunspecDevice {
                 }
 
                 // Add the Points that are directly in this model.
-                var nextFieldAddress = addGroupPoints(sunSpecModel.group, modelAddress, block, modelId, modelLength, "", true)
+                var nextFieldAddress = addGroupPoints(
+                    sunSpecModel.group,
+                    modelAddress,
+                    block,
+                    modelId,
+                    modelLength,
+                    "",
+                    true,
+                    pointNamesThatAreReferenced
+                )
                 for (subGroupIndex in 0 until count) {
                     nextFieldAddress = addGroup(
                         block,
@@ -226,10 +238,11 @@ object SunspecDevice {
                         modelId,
                         null,
                         false,
+                        pointNamesThatAreReferenced,
                     )
                 }
             } else {
-                addGroup(block, "", sunSpecModel.group, modelAddress, modelId, modelLength, true)
+                addGroup(block, "", sunSpecModel.group, modelAddress, modelId, modelLength, true, pointNamesThatAreReferenced)
             }
         }
 
@@ -240,10 +253,10 @@ object SunspecDevice {
         // Determine a better description if none was set
         if (description.isBlank()) {
             schemaDevice["Model 1"]?.let {
-                val manufacturer = it["Mn"]
-                val model        = it["Md"]
-                val serialNr     = it["SN"]
-                val version      = it["Vr"]
+                val manufacturer = it["Manufacturer"]
+                val model        = it["Model"]
+                val serialNr     = it["Serial Number"]
+                val version      = it["Version"]
                 requireNotNull(manufacturer)
                 requireNotNull(model)
                 requireNotNull(serialNr)
@@ -253,16 +266,48 @@ object SunspecDevice {
                 model.need()
                 serialNr.need()
                 version.need()
-                schemaDevice.update(1000)
+                schemaDevice.update(100000)
                 schemaDevice.description =
-                    "A schema specifically for the SunSpec device made by ${manufacturer.stringValue} model ${model.stringValue} using version ${version.stringValue} (SN: ${serialNr.stringValue})"
+                    "A schema specifically for the SunSpec device " +
+                        "made by ${manufacturer.stringValue} " +
+                        "model ${model.stringValue} " +
+                        "using version ${version.stringValue} " +
+                        "(SN: ${serialNr.stringValue})"
             }
         }
 
         return schemaDevice
     }
 
-    private fun addGroupPoints(group: Group, startFieldAddress: Address, block: Block, modelId: Int, modelLength: Int?, prefix: String, addComments: Boolean): Address {
+
+    /**
+     * Find all point names that are referenced else where.
+     * These are scaling factors and count references.
+     */
+    fun collectPointNamesThatAreReferenced(model: SunSpecModel) =
+        collectPointNamesThatAreReferenced(model.group)
+            .distinct()
+            .filter { it.isNotBlank() }
+            .filter { it.contains(Regex("[A-Za-z]")) }
+
+    fun collectPointNamesThatAreReferenced(group: Group): List<String> {
+        val pointNames = mutableListOf<String>()
+        group.points.filter { it.type == SUNSSF }.forEach { pointNames.add(it.name) }
+        group.count?.let { pointNames.add(it) }
+        group.groups.map { collectPointNamesThatAreReferenced(it) }.flatten().forEach { pointNames.add(it) }
+        return pointNames
+    }
+
+    private fun addGroupPoints(
+        group: Group,
+        startFieldAddress: Address,
+        block: Block,
+        modelId: Int,
+        modelLength: Int?,
+        prefix: String,
+        addComments: Boolean,
+        pointNamesThatAreReferenced: List<String>,
+    ): Address {
         var nextFieldAddress = startFieldAddress
         var pointNrInModel = 0 // Needed for putting the right comment on the registers
         var didFirstDataComment = false
@@ -282,7 +327,7 @@ object SunspecDevice {
 
         for (point in group.points) {
             pointNrInModel++
-            val field = createAndAddFieldToModel(block, nextFieldAddress, point, prefix)
+            val field = createAndAddFieldToModel(block, nextFieldAddress, point, prefix, pointNamesThatAreReferenced)
             if (forceFetchGroup) {
                 field.fetchGroup = fetchGroupId
             }
@@ -334,7 +379,7 @@ object SunspecDevice {
         } catch (_: NumberFormatException) {
             val countField =
                 block.getField(countString)
-                    ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group")
+                    ?: throw ModbusException("Unable to find the count field named \"$countString\" for this group in \"${block.id}\"")
             countField.initialize()
             countField.update()
             val countValue =
@@ -352,10 +397,11 @@ object SunspecDevice {
         startFieldAddress: Address,
         modelId: Int,
         modelLength: Int?,
-        addComments: Boolean,
+        isRootGroup: Boolean,
+        pointNamesThatAreReferenced: List<String>,
     ): Address {
         // Add the Points that are directly in this model.
-        var nextFieldAddress = addGroupPoints(group, startFieldAddress, block, modelId, modelLength, prefix, addComments)
+        var nextFieldAddress = addGroupPoints(group, startFieldAddress, block, modelId, modelLength, prefix, isRootGroup, pointNamesThatAreReferenced)
 
         // Any repeating subgroups?
         if (group.groups.isEmpty()) {
@@ -378,6 +424,7 @@ object SunspecDevice {
                     modelId,
                     null,
                     false,
+                    pointNamesThatAreReferenced,
                 )
             }
             subGroupIndex++
@@ -443,7 +490,13 @@ object SunspecDevice {
 
     val y2kEpochOffset = Instant.parse("2000-01-01T00:00:00.000Z").toEpochMilli()
 
-    private fun createAndAddFieldToModel(block: Block, registerAddress: Address, point: Point, prefix: String): Field {
+    private fun createAndAddFieldToModel(
+        block: Block,
+        registerAddress: Address,
+        point: Point,
+        prefix: String,
+        pointNamesThatAreReferenced: List<String>,
+    ): Field {
         val functionName: String
         val additionalArguments: String
 
@@ -497,8 +550,21 @@ object SunspecDevice {
             Field
                 .builder()
                 .block(block)
-                .id(prefix + point.name)
                 .immutable(point.mutable == Point.Mutable.IMMUTABLE)
+
+        // Some fields are referenced as the "number of repeats" or as a scaling factor.
+        // This makes using a different name tricky.
+        val label = point.label
+        fieldBuilder.id(
+            prefix +
+            when {
+                !pointNamesThatAreReferenced.contains(point.name) &&
+                point.type != SUNSSF &&
+                !label.isNullOrBlank() ->
+                    label.replace("-","_").replace(Regex("[^A-Za-z0-9 _]"), " ").replace(Regex(" +"), " ")
+                else -> point.name
+            }.trim()
+        )
 
         // Add the unit if available
         if (!point.units.isNullOrBlank()) {
