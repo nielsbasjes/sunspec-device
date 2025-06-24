@@ -48,7 +48,7 @@ RUN apt clean cache \
    && apt clean cache
 
 # Installs Kotlin
-ARG KOTLIN_VERSION=2.1.21
+ARG KOTLIN_VERSION=2.2.0
 WORKDIR /usr/local/
 RUN wget "https://github.com/JetBrains/kotlin/releases/download/v$KOTLIN_VERSION/kotlin-compiler-$KOTLIN_VERSION.zip" && \
     unzip "kotlin-compiler-$KOTLIN_VERSION.zip" && \
