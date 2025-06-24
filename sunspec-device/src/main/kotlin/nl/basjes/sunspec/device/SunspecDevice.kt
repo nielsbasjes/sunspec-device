@@ -26,6 +26,7 @@ import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.SchemaDevice
 import nl.basjes.modbus.schema.exceptions.ModbusSchemaParseException
 import nl.basjes.modbus.schema.get
+import nl.basjes.modbus.schema.utils.CodeGeneration.convertToCodeCompliantName
 import nl.basjes.modbus.schema.utils.StringTable
 import nl.basjes.sunspec.SUNSPEC_MODEL_ID_REGISTERS
 import nl.basjes.sunspec.SUNSPEC_MODEL_L_REGISTERS
@@ -281,7 +282,7 @@ object SunspecDevice {
 
 
     /**
-     * Find all point names that are referenced else where.
+     * Find all point names that are referenced elsewhere.
      * These are scaling factors and count references.
      */
     fun collectPointNamesThatAreReferenced(model: SunSpecModel) =
@@ -561,7 +562,11 @@ object SunspecDevice {
                 !pointNamesThatAreReferenced.contains(point.name) &&
                 point.type != SUNSSF &&
                 !label.isNullOrBlank() ->
-                    label.replace("-","_").replace(Regex("[^A-Za-z0-9 _]"), " ").replace(Regex(" +"), " ")
+                    label
+                        .replace("-"," ")
+                        .replace(Regex("[^A-Za-z0-9 _]"), " ")
+                        .replace(Regex(" +"), " ")
+                        .trim()
                 else -> point.name
             }.trim()
         )
