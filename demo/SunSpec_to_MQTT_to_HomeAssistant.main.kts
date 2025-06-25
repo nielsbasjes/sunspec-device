@@ -34,6 +34,7 @@ import de.kempmobil.ktor.mqtt.QoS
 import de.kempmobil.ktor.mqtt.TimeoutException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.IOException
@@ -53,8 +54,6 @@ import nl.basjes.modbus.schema.toTable
 import nl.basjes.sunspec.device.SunspecDevice
 import org.json.JSONObject
 import java.time.Instant
-import java.util.Timer
-import java.util.TimerTask
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.hours
 
@@ -157,7 +156,9 @@ ModbusDeviceJ2Mod(modbusMaster, modbusUnit). use { modbusDevice ->
         mqttClient.connect().onFailure { throw IOException("Connection failed: $it") }
     }
     runLoop(sunSpec, mqttClient, mqttTopic)
-
+    runBlocking {
+        mqttClient.disconnect()
+    }
 }
 
 fun SchemaDevice.wantField(blockId:String, fieldId:String) =
@@ -185,29 +186,39 @@ fun runLoop(device: SchemaDevice, mqttClient: MqttClient?, mqttTopic: String) {
 
     // ----------------------------------------------------------------------------------------
 
+    val interval = 1000L
+
     println("Starting read loop")
 
-    val timer = Timer("Fetcher")
-    val timerTask: AliveTimerTask =
-        object : AliveTimerTask() {
-            override fun run() {
+    while (true) {
                 try {
+            runBlocking {
+                // Wait until the current time is a multiple of the configured interval
+                val now = Instant.now().toEpochMilli()
+                val sleepTime = (((now / interval) + 1) * interval) - now
+                if (sleepTime > 0) delay(sleepTime)
+            }
                     // Update all fields
+            val startUpdate = Instant.now()
+            print("Doing update at: $startUpdate .. ")
                     device.update()
+            val finishUpdate = Instant.now()
+            println("done in ${finishUpdate.toEpochMilli() -  startUpdate.toEpochMilli()} milliseconds.")
 
                     val result = JSONObject()
 
                     // We are rounding the timestamp to seconds to make the graphs in influxdb work a bit better
                     val now = Instant.now()
                     result.put("timestamp", now.toEpochMilli())
+            result.put("timestampString", now)
 
                     allFields.forEach {
                         val jsonFieldName = it.jsonFieldName()
                         when(it.returnType) {
-                            DOUBLE ->        result.put(jsonFieldName, it.doubleValue     )
-                            LONG ->          result.put(jsonFieldName, it.longValue       )
-                            STRING ->        result.put(jsonFieldName, it.stringValue     )
-                            STRINGLIST ->    result.put(jsonFieldName, it.stringListValue )
+                    DOUBLE     -> result.put(jsonFieldName, it.doubleValue     ?: 0.0)
+                    LONG       -> result.put(jsonFieldName, it.longValue       ?: 0)
+                    STRING     -> result.put(jsonFieldName, it.stringValue     ?: "")
+                    STRINGLIST -> result.put(jsonFieldName, it.stringListValue ?: listOf<String>())
                             UNKNOWN -> TODO()
                             BOOLEAN -> TODO()
                         }
@@ -230,31 +241,17 @@ fun runLoop(device: SchemaDevice, mqttClient: MqttClient?, mqttTopic: String) {
                     }
 
                 } catch (e: TimeoutException) {
-                    System.err.println("Got a TimeoutException from MQTT (ignoring): ${e.message}")
+            System.err.println("Got a TimeoutException from MQTT (ignoring 1): $e --> ${e.message} ==> ${e.printStackTrace()}")
+        } catch (e: java.util.concurrent.TimeoutException) {
+            System.err.println("Got a java.util.concurrent.TimeoutException (ignoring 2): $e --> ${e.message} ==> ${e.printStackTrace()}")
                 } catch (e: Exception) {
-                    System.err.println("Stopping because of exception: ${e.message}")
-                    cancel()
-                }
-            }
-        }
-
-    timer.scheduleAtFixedRate(timerTask, 0L, 1000L)
-
-    while (timerTask.isAlive) {
-//        println("Still alive")
-        Thread.sleep(1000) // Check every second
-    }
+            System.err.println("Got an exception: $e --> ${e.message} ==> ${e.printStackTrace()}")
     println("Stopping")
-    timer.cancel()
+            return
 }
-
-abstract class AliveTimerTask : TimerTask() {
-    var isAlive: Boolean = true
-
-    override fun cancel(): Boolean {
-        this.isAlive = false
-        return super.cancel()
     }
+
+    println("Stopping.")
 }
 
 fun Field.jsonFieldName() = "${this.block.id} ${this.id}".replace(Regex("[^a-zA-Z0-9_]"), "_")
@@ -288,9 +285,9 @@ fun generateHomeAssistantConfig(
     configFields.addAll(allFields)
     configFields.distinct()
 
-    allFields.forEach { it.need() }
+    configFields.forEach { it.need() }
     device.update(1000)
-    allFields.forEach { it.unNeed() }
+    configFields.forEach { it.unNeed() }
 
     println("""
 # ----------------------------------------------------------------------------------------
@@ -310,6 +307,7 @@ mqtt:
                 name += " - "
                 if(it.id.contains("_")) {
                     name += it.id
+                        // Make the name of fields in repeating blocks look better
                         .replace(Regex("_([0-9]+)_"), "[$1].")
                         .replace("_", ".")
                     if (!it.id.endsWith(it.shortDescription)) {
