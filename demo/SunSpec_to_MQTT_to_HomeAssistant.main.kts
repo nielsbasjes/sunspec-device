@@ -18,14 +18,16 @@
  *
  */
 
+@file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.6.0")
-@file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.10.0")
+@file:DependsOn("nl.basjes.modbus:modbus-api-j2mod:0.10.0")
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:0.6.1")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-client-jvm:0.6.1")
 @file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.25.0")
 @file:DependsOn("org.slf4j:slf4j-simple:2.0.17")
 
+import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
 import de.kempmobil.ktor.mqtt.MqttClient
 import de.kempmobil.ktor.mqtt.PublishRequest
 import de.kempmobil.ktor.mqtt.QoS
@@ -36,7 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.IOException
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
+import nl.basjes.modbus.device.j2mod.ModbusDeviceJ2Mod
 import nl.basjes.modbus.schema.Field
 import nl.basjes.modbus.schema.ReturnType.BOOLEAN
 import nl.basjes.modbus.schema.ReturnType.DOUBLE
@@ -56,11 +58,11 @@ import java.util.TimerTask
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.hours
 
-val modbusIp             :String = "sunspec.iot.basjes.nl"
+val modbusHost           :String = "sunspec.iot.basjes.nl"
 val modbusPort           :Int    = 502 // The default MODBUS TCP port
 val modbusUnit           :Int    = 126 // SMA uses 126, other vendors can differ
 
-val mqttBrokerHost      :String? = "localhost"
+val mqttBrokerHost      :String? = null //"localhost"
 val mqttBrokerPort      :Int     = 1883
 val mqttTopic           :String? = "energy/solar"
 
@@ -84,53 +86,53 @@ fun allTheFieldsIWant(device: SchemaDevice): List<Field> {
     // Or a smarter more efficient selection
 
     // These are always needed
-    allFields.add(device.wantField("Model 1", "Mn"              ))
-    allFields.add(device.wantField("Model 1", "Md"              ))
-    allFields.add(device.wantField("Model 1", "Vr"              ))
-    allFields.add(device.wantField("Model 1", "SN"              ))
+    allFields.add(device.wantField("Model 1",   "Manufacturer"              ))
+    allFields.add(device.wantField("Model 1",   "Model"                     ))
+    allFields.add(device.wantField("Model 1",   "Version"                   ))
+    allFields.add(device.wantField("Model 1",   "Serial Number"             ))
 
-    allFields.add(device.wantField("Model 101", "A"             ))
-    allFields.add(device.wantField("Model 101", "AphA"          ))
-    allFields.add(device.wantField("Model 101", "AphB"          ))
-    allFields.add(device.wantField("Model 101", "AphC"          ))
-    allFields.add(device.wantField("Model 101", "PPVphAB"       ))
-    allFields.add(device.wantField("Model 101", "PPVphBC"       ))
-    allFields.add(device.wantField("Model 101", "PPVphCA"       ))
-    allFields.add(device.wantField("Model 101", "PhVphA"        ))
-    allFields.add(device.wantField("Model 101", "PhVphB"        ))
-    allFields.add(device.wantField("Model 101", "PhVphC"        ))
-    allFields.add(device.wantField("Model 101", "W"             ))
-    allFields.add(device.wantField("Model 101", "Hz"            ))
-    allFields.add(device.wantField("Model 101", "VA"            ))
-    allFields.add(device.wantField("Model 101", "VAr"           ))
-    allFields.add(device.wantField("Model 101", "PF"            ))
-    allFields.add(device.wantField("Model 101", "WH"            ))
-    allFields.add(device.wantField("Model 101", "DCA"           ))
-    allFields.add(device.wantField("Model 101", "DCV"           ))
-    allFields.add(device.wantField("Model 101", "DCW"           ))
-    allFields.add(device.wantField("Model 101", "TmpCab"        ))
-    allFields.add(device.wantField("Model 101", "TmpSnk"        ))
-    allFields.add(device.wantField("Model 101", "TmpTrns"       ))
-    allFields.add(device.wantField("Model 101", "TmpOt"         ))
+    allFields.add(device.wantField("Model 101", "AC Current"                ))
+    allFields.add(device.wantField("Model 101", "AC Current Phase A"        ))
+    allFields.add(device.wantField("Model 101", "AC Current Phase B"        ))
+    allFields.add(device.wantField("Model 101", "AC Current Phase C"        ))
+    allFields.add(device.wantField("Model 101", "AC Voltage Phase AB"       ))
+    allFields.add(device.wantField("Model 101", "AC Voltage Phase BC"       ))
+    allFields.add(device.wantField("Model 101", "AC Voltage Phase CA"       ))
+    allFields.add(device.wantField("Model 101", "AC Voltage Phase AN"       ))
+    allFields.add(device.wantField("Model 101", "AC Voltage Phase BN"       ))
+    allFields.add(device.wantField("Model 101", "AC Voltage Phase CN"       ))
+    allFields.add(device.wantField("Model 101", "AC Power"                  ))
+    allFields.add(device.wantField("Model 101", "AC Line Frequency"         ))
+    allFields.add(device.wantField("Model 101", "AC Apparent Power"         ))
+    allFields.add(device.wantField("Model 101", "AC Reactive Power"         ))
+    allFields.add(device.wantField("Model 101", "AC Power Factor"           ))
+    allFields.add(device.wantField("Model 101", "AC Energy"                 ))
+    allFields.add(device.wantField("Model 101", "DC Current"                ))
+    allFields.add(device.wantField("Model 101", "DC Voltage"                ))
+    allFields.add(device.wantField("Model 101", "DC Power"                  ))
+    allFields.add(device.wantField("Model 101", "Cabinet Temperature"       ))
+    allFields.add(device.wantField("Model 101", "Heat Sink Temperature"     ))
+    allFields.add(device.wantField("Model 101", "Transformer Temperature"   ))
+    allFields.add(device.wantField("Model 101", "Other Temperature"         ))
 
-    allFields.add(device.wantField("Model 160", "Module_0_ID"   ))
-    allFields.add(device.wantField("Model 160", "Module_0_DCA"  ))
-    allFields.add(device.wantField("Model 160", "Module_0_DCV"  ))
-    allFields.add(device.wantField("Model 160", "Module_0_DCW"  ))
-    allFields.add(device.wantField("Model 160", "Module_1_ID"   ))
-    allFields.add(device.wantField("Model 160", "Module_1_DCA"  ))
-    allFields.add(device.wantField("Model 160", "Module_1_DCV"  ))
-    allFields.add(device.wantField("Model 160", "Module_1_DCW"  ))
+    allFields.add(device.wantField("Model 160", "Module_0_Input ID"         ))
+    allFields.add(device.wantField("Model 160", "Module_0_DC Current"       ))
+    allFields.add(device.wantField("Model 160", "Module_0_DC Voltage"       ))
+    allFields.add(device.wantField("Model 160", "Module_0_DC Power"         ))
+    allFields.add(device.wantField("Model 160", "Module_1_Input ID"         ))
+    allFields.add(device.wantField("Model 160", "Module_1_DC Current"       ))
+    allFields.add(device.wantField("Model 160", "Module_1_DC Voltage"       ))
+    allFields.add(device.wantField("Model 160", "Module_1_DC Power"         ))
     return allFields
 }
 
 // ===================================================================================================
 
 
-val connectionString = "modbus-tcp:tcp://$modbusIp:$modbusPort?unit-identifier=$modbusUnit"
-
 print("Modbus: Connecting...")
-ModbusDevicePlc4j(connectionString).use { modbusDevice ->
+val modbusMaster = ModbusTCPMaster(modbusHost, modbusPort)
+modbusMaster.connect()
+ModbusDeviceJ2Mod(modbusMaster, modbusUnit). use { modbusDevice ->
     println(" done")
 
     // Connect to the SunSpec device and generate a SchemaDevice with all supported SunSpec Models and Fields.
@@ -259,7 +261,7 @@ fun Field.jsonFieldName() = "${this.block.id} ${this.id}".replace(Regex("[^a-zA-
 
 fun showAllFieldsWithUsableValues(schemaDevice: SchemaDevice) {
     schemaDevice.updateAll()
-    println("All possible fields that provide a useful value:\n${schemaDevice.toTable(true)}")
+    println("All possible fields that provide a useful value:\n${schemaDevice.toTable(false)}")
     exitProcess(0)
 }
 
@@ -273,10 +275,10 @@ fun generateHomeAssistantConfig(
     // a config for Home Assistant is generated (must be copied to the Home Assistant setup manually)
 
     // These are always needed
-    val manufacturer = device.wantField("Model 1", "Mn")
-    val model        = device.wantField("Model 1", "Md")
-    val version      = device.wantField("Model 1", "Vr")
-    val serialNumber = device.wantField("Model 1", "SN")
+    val manufacturer = device.wantField("Model 1", "Manufacturer")
+    val model        = device.wantField("Model 1", "Model")
+    val version      = device.wantField("Model 1", "Version")
+    val serialNumber = device.wantField("Model 1", "Serial Number")
 
     val configFields = mutableListOf<Field>()
     configFields.add(manufacturer)

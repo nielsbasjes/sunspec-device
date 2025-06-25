@@ -151,10 +151,10 @@ private fun runLoop(device: SchemaDevice, writeApi: WriteApiBlocking?, databaseN
                             .measurement(databaseName)
                             // We are rounding the timestamp to seconds to make the graphs in influxdb work a bit better
                             .time(Instant.ofEpochSecond(Instant.now().epochSecond), WritePrecision.S)
-                            .addTag("Manufacturer",  device["Model 1"]["Mn"]?.stringValue ?: "Unknown")
-                            .addTag("Model",         device["Model 1"]["Md"]?.stringValue ?: "Unknown")
-                            .addTag("Version",       device["Model 1"]["Vr"]?.stringValue ?: "Unknown")
-                            .addTag("Serial Number", device["Model 1"]["SN"]?.stringValue ?: "Unknown")
+                            .addTag("Manufacturer",  device["Model 1"]["Manufacturer"]  ?.stringValue ?: "Unknown")
+                            .addTag("Model",         device["Model 1"]["Model"]         ?.stringValue ?: "Unknown")
+                            .addTag("Version",       device["Model 1"]["Version"]       ?.stringValue ?: "Unknown")
+                            .addTag("Serial Number", device["Model 1"]["Serial Number"] ?.stringValue ?: "Unknown")
                     allFields.forEach {
                         val label = it.id
                         when(it.returnType) {

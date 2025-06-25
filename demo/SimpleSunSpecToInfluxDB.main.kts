@@ -103,10 +103,10 @@ fun fieldOrFail(field:Field?) = field ?: throw ModbusException("The desired fiel
 fun runLoop(device: SchemaDevice, writeApi: WriteApiBlocking?, databaseMeasurement: String) {
 
     // These are always needed as tags for the data in InfluxDB
-    val manufacturer = fieldOrFail(device["Model 1"]["Mn"])
-    val model        = fieldOrFail(device["Model 1"]["Md"])
-    val version      = fieldOrFail(device["Model 1"]["Vr"])
-    val serialNumber = fieldOrFail(device["Model 1"]["SN"])
+    val manufacturer = fieldOrFail(device["Model 1"]["Manufacturer"])
+    val model        = fieldOrFail(device["Model 1"]["Model"])
+    val version      = fieldOrFail(device["Model 1"]["Version"])
+    val serialNumber = fieldOrFail(device["Model 1"]["Serial Number"])
 
     // Use these fields as Measurements towards InfluxDB
     val allFields = mutableMapOf<String, Field>()
