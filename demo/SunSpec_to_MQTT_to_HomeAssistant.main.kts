@@ -24,7 +24,7 @@
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:0.6.2")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-client-jvm:0.6.2")
-@file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.25.0")
+@file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.25.1")
 @file:DependsOn("org.slf4j:slf4j-simple:2.0.17")
 
 import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
