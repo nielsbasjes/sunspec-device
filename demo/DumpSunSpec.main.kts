@@ -22,8 +22,8 @@
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.6.0")
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.11.0")
 @file:DependsOn("args4j:args4j:2.37")
-@file:DependsOn("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.0")
-@file:DependsOn("org.apache.logging.log4j:log4j-core:2.25.0")
+@file:DependsOn("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.1")
+@file:DependsOn("org.apache.logging.log4j:log4j-core:2.25.1")
 
 import nl.basjes.modbus.device.exception.ModbusException
 import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
