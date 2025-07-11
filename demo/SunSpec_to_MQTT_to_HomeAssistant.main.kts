@@ -19,7 +19,7 @@
  */
 
 @file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
-@file:DependsOn("nl.basjes.sunspec:sunspec-device:0.6.0")
+@file:DependsOn("nl.basjes.sunspec:sunspec-device:0.7.0")
 @file:DependsOn("nl.basjes.modbus:modbus-api-j2mod:0.11.0")
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:0.6.2")
@@ -191,67 +191,66 @@ fun runLoop(device: SchemaDevice, mqttClient: MqttClient?, mqttTopic: String) {
     println("Starting read loop")
 
     while (true) {
-                try {
+        try {
             runBlocking {
                 // Wait until the current time is a multiple of the configured interval
                 val now = Instant.now().toEpochMilli()
                 val sleepTime = (((now / interval) + 1) * interval) - now
                 if (sleepTime > 0) delay(sleepTime)
             }
-                    // Update all fields
+            // Update all fields
             val startUpdate = Instant.now()
             print("Doing update at: $startUpdate .. ")
                     device.update()
             val finishUpdate = Instant.now()
             println("done in ${finishUpdate.toEpochMilli() -  startUpdate.toEpochMilli()} milliseconds.")
 
-                    val result = JSONObject()
+            val result = JSONObject()
 
-                    // We are rounding the timestamp to seconds to make the graphs in influxdb work a bit better
-                    val now = Instant.now()
-                    result.put("timestamp", now.toEpochMilli())
+            // We are rounding the timestamp to seconds to make the graphs in influxdb work a bit better
+            val now = Instant.now()
+            result.put("timestamp", now.toEpochMilli())
             result.put("timestampString", now)
 
-                    allFields.forEach {
-                        val jsonFieldName = it.jsonFieldName()
-                        when(it.returnType) {
+            allFields.forEach {
+                val jsonFieldName = it.jsonFieldName()
+                when(it.returnType) {
                     DOUBLE     -> result.put(jsonFieldName, it.doubleValue     ?: 0.0)
                     LONG       -> result.put(jsonFieldName, it.longValue       ?: 0)
                     STRING     -> result.put(jsonFieldName, it.stringValue     ?: "")
                     STRINGLIST -> result.put(jsonFieldName, it.stringListValue ?: listOf<String>())
-                            UNKNOWN -> TODO()
-                            BOOLEAN -> TODO()
-                        }
-                    }
+                    BOOLEAN    -> result.put(jsonFieldName, it.booleanValue     ?: "")
+                    UNKNOWN    -> TODO()
+                }
+            }
 
-                    if (mqttClient == null) {
-                        println(result)
-                    } else {
-                        GlobalScope.launch {
-                            print("Writing to MQTT: $now .. ")
-                            mqttClient
-                                .publish(PublishRequest(mqttTopic) {
-                                    desiredQoS = QoS.AT_LEAST_ONCE
-                                    messageExpiryInterval = 12.hours
-                                    payload(result.toString())
-                                })
-                                .onSuccess { println("COMPLETED") }
-                                .onFailure { println("FAILED with $it") }
-                        }
-                    }
+            if (mqttClient == null) {
+                println(result)
+            } else {
+                GlobalScope.launch {
+                    print("Writing to MQTT: $now .. ")
+                    mqttClient
+                        .publish(PublishRequest(mqttTopic) {
+                            desiredQoS = QoS.AT_LEAST_ONCE
+                            messageExpiryInterval = 12.hours
+                            payload(result.toString())
+                        })
+                        .onSuccess { println("COMPLETED") }
+                        .onFailure { println("FAILED with $it") }
+                }
+            }
 
-                } catch (e: TimeoutException) {
+        } catch (e: TimeoutException) {
             System.err.println("Got a TimeoutException from MQTT (ignoring 1): $e --> ${e.message} ==> ${e.printStackTrace()}")
         } catch (e: java.util.concurrent.TimeoutException) {
             System.err.println("Got a java.util.concurrent.TimeoutException (ignoring 2): $e --> ${e.message} ==> ${e.printStackTrace()}")
                 } catch (e: Exception) {
             System.err.println("Got an exception: $e --> ${e.message} ==> ${e.printStackTrace()}")
-    println("Stopping")
+            println("Stopping")
             return
-}
+        }
     }
 
-    println("Stopping.")
 }
 
 fun Field.jsonFieldName() = "${this.block.id} ${this.id}".replace(Regex("[^a-zA-Z0-9_]"), "_")
