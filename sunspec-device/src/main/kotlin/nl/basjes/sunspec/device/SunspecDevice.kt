@@ -74,11 +74,16 @@ object SunspecDevice {
     private fun getFirstRegisterValue(field: Field): RegisterValue? {
         field.initialize()
         val parsedExpression = field.parsedExpression ?: return null  // Nothing to do
-        val registerValues = parsedExpression.getRegisterValues(field.block.schemaDevice)
-        if (registerValues.isEmpty()) {
+        val modbusValues = parsedExpression.getModbusValues(field.block.schemaDevice)
+        if (modbusValues.isEmpty()) {
             return null // Nothing to do
         }
-        return registerValues[0]
+        val registerValue = modbusValues[0]
+        require(registerValue is RegisterValue) {
+            "The expression $parsedExpression returned a ${registerValue.javaClass.name} instance " +
+                "instead of a ${RegisterValue::class.java.name} instance."
+        }
+        return registerValue
     }
 
     private fun setCommentOnFirstRegisterValue(field: Field, comment: String) {
@@ -446,12 +451,12 @@ object SunspecDevice {
         getFirstRegisterValue(modelIdField)?.let {
             it.comment =
                 "--------------------------------------\n" +
-                    "Model $modelId [Header @ ${it.address.toCleanFormat()}]: Unknown (vendor specific?) model. No fields available."
+                "Model $modelId [Header @ ${it.address.toCleanFormat()}]: Unknown (vendor specific?) model. No fields available."
         }
 
 
         var unknownAddress = modelAddress.increment(SUNSPEC_MODEL_ID_REGISTERS + SUNSPEC_MODEL_L_REGISTERS)
-        block.schemaDevice.getRegisterBlock(unknownAddress.addressClass)[unknownAddress].let {
+        block.schemaDevice.getModbusBlock(unknownAddress.addressClass)[unknownAddress].let {
             it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
                 it.address.increment(modelLength-1).toCleanFormat()
             }]: $modelLength registers"
