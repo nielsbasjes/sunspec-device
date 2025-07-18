@@ -18,9 +18,10 @@
 
 description: 'Fake Device that uses all possible expressions'
 schemaFeatureLevel: 2
+maxRegistersPerModbusRequest: 42
 blocks:
   - id: 'Main'
-    description: 'The only block of registers'
+    description: 'The block with all fields'
     fields:
       - id: 'CombinedNumerical'
         description:  'A Combined Numerical Expression'
