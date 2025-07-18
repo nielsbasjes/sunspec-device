@@ -504,7 +504,6 @@
     <module>.git-hooks</module>
     <module>sunspec-model</module>
     <module>sunspec-device</module>
-    <module>sunspec-schema-writer</module>
   </modules>
 
   <licenses>
