@@ -20,7 +20,7 @@
 
 @file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.7.0")
-@file:DependsOn("nl.basjes.modbus:modbus-api-j2mod:0.11.0")
+@file:DependsOn("nl.basjes.modbus:modbus-api-j2mod:0.12.0")
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:0.6.2")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-client-jvm:0.6.2")
