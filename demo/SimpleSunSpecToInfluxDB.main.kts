@@ -22,7 +22,7 @@
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.7.3")
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.14.0")
 @file:DependsOn("com.influxdb:influxdb-client-java:7.3.0")
-@file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.25.1")
+@file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.25.2")
 @file:DependsOn("org.slf4j:slf4j-simple:2.0.17")
 
 import com.influxdb.client.InfluxDBClientFactory
