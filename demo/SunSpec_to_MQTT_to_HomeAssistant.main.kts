@@ -1,4 +1,4 @@
-#!/usr/bin/env kotlin
+#!/usr/bin/env -S kotlin -howtorun .main.kts
 /*
  *
  * Modbus Schema Toolkit
