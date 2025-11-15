@@ -52,7 +52,7 @@
     <dependency>
       <groupId>io.github.optimumcode</groupId>
       <artifactId>json-schema-validator-jvm</artifactId>
-      <version>0.5.2</version>
+      <version>0.5.3</version>
       <scope>test</scope>
     </dependency>
 
