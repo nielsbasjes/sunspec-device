@@ -159,8 +159,8 @@ object SunspecDevice {
 
             // Special case is the header
             if (modelId == SUNS_HEADER_MODEL_ID) {
-                val sunSHeaderBlock = Utils.addSunSHeaderBlock(schemaDevice, deviceSunSpecModel.address)
-                setCommentOnFirstRegisterValue(sunSHeaderBlock, "--------------------------------------\nSunS header")
+                val sunSHeaderField = Utils.addSunSHeaderBlock(schemaDevice, deviceSunSpecModel.address)
+                setCommentOnFirstRegisterValue(sunSHeaderField, "--------------------------------------\nSunS header")
                 continue
             }
 
