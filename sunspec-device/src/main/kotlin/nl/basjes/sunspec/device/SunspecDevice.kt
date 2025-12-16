@@ -281,6 +281,7 @@ object SunspecDevice {
             }
         }
 
+        verify(schemaDevice)
         return schemaDevice
     }
 
