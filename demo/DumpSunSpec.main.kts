@@ -18,7 +18,7 @@
  *
  */
 
-@file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
+@file:DependsOn("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
 @file:DependsOn("nl.basjes.sunspec:sunspec-device:0.7.3")
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.14.0")
 @file:DependsOn("args4j:args4j:2.37")
