@@ -343,16 +343,17 @@ object SunspecDevice {
                         getFirstRegisterValue(field)?.let {
                             it.comment =
                                 "--------------------------------------\n" +
-                                    "Model $modelId [Header @ ${it.address.toCleanFormat()}]: ${group.label}"
+                                "Model $modelId [Header @ ${it.address.toCleanFormat()}]: ${group.label}"
                         }
                     }
                 } else {
                     if (!didFirstDataComment) {
                         didFirstDataComment = true
                         getFirstRegisterValue(field)?.let {
-                            it.comment = "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
-                                it.address.increment((modelLength ?: 1)-1).toCleanFormat()
-                            }]: $modelLength registers"
+                            it.comment =
+                                "Model $modelId [Data @ ${it.address.toCleanFormat()} - ${
+                                    it.address.increment((modelLength ?: 1)-1).toCleanFormat()
+                                }]: $modelLength registers"
                         }
                     }
                 }
