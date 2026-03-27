@@ -23,7 +23,7 @@
 @file:DependsOn("nl.basjes.modbus:modbus-api-j2mod:0.14.0")
 @file:DependsOn("org.json:json:20250517")
 @file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-core-jvm:1.0.0")
-@file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-client-jvm:1.0.0")
+@file:DependsOn("de.kempmobil.ktor.mqtt:mqtt-client-jvm:1.1.0")
 @file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.25.3")
 @file:DependsOn("org.slf4j:slf4j-simple:2.0.17")
 
