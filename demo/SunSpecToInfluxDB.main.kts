@@ -23,8 +23,8 @@
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.14.0")
 @file:DependsOn("com.influxdb:influxdb-client-java:8.0.0")
 @file:DependsOn("args4j:args4j:2.37")
-@file:DependsOn("org.apache.logging.log4j:log4j-slf4j2-impl:2.25.4")
-@file:DependsOn("org.apache.logging.log4j:log4j-core:2.25.4")
+@file:DependsOn("org.apache.logging.log4j:log4j-slf4j2-impl:2.26.0")
+@file:DependsOn("org.apache.logging.log4j:log4j-core:2.26.0")
 
 import com.influxdb.client.InfluxDBClientFactory
 import com.influxdb.client.WriteApiBlocking
