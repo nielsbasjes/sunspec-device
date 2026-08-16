@@ -65,6 +65,11 @@ object FixesAndImprovements {
                 point.description = description
             }
 
+            // Bug reported as https://github.com/sunspec/models/issues/275 was solved but not yet released.
+            if (point.name == "DeptRef" && point.type == Point.Type.BITFIELD_32 && point.size == 1) {
+                point.size = 2
+            }
+
             // Rewrite some of the provided units.
             point.units = when (point.units){
                 "C"   -> "°C"

@@ -69,9 +69,9 @@
     <!-- ========================================== -->
     <!-- ========== SunSpec Version info ========== -->
     <!-- The version of the release -->
-    <sunspec-model.version>v2024-11-15</sunspec-model.version>
+    <sunspec-model.version>v2026-04-20</sunspec-model.version>
     <!-- The directory IN the release under which the files are located -->
-    <sunspec-model-basedir>models-2024-11-15</sunspec-model-basedir>
+    <sunspec-model-basedir>models-2026-04-20</sunspec-model-basedir>
     <!-- ========================================== -->
 
     <git-commit-id-maven-plugin.version>10.0.0</git-commit-id-maven-plugin.version>

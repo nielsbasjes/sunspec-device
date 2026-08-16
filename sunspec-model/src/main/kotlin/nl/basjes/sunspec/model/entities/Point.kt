@@ -33,7 +33,7 @@ class Point (
     @SerialName("count")        val count: Int? = null,
 
     @Required
-    @SerialName("size")         val size: Int,
+    @SerialName("size")         var size: Int,
 
     /** The NAME of the scaling factor point OR a [-10;10] integer OR null */
     @SerialName("sf")           val scalingFactor: String? = null,
