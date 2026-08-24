@@ -137,7 +137,7 @@ internal class TestSunspecDeviceGenerator {
 
             LOG.error("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
-            LOG.info("\n{}", schemaDevice.toTable());
+            LOG.info("\n{}", schemaDevice.toTable())
         }
     }
 }
