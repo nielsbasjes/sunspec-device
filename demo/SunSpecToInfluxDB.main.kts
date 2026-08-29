@@ -81,7 +81,7 @@ fun main(vararg args: String) {
     val databaseOrg    = commandlineOptions.databaseOrg
     val databaseBucket = commandlineOptions.databaseBucket
 
-    val connectionString = "modbus-tcp:tcp://$modbusIp:$modbusPort?unit-identifier=$modbusUnit"
+    val connectionString = "modbus-tcp:tcp://$modbusIp:$modbusPort?default-unit-identifier=$modbusUnit"
 
     print("Modbus: Connecting...")
     ModbusDevicePlc4j(connectionString).use { modbusDevice ->

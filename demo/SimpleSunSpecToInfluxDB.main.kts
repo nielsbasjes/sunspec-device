@@ -56,7 +56,7 @@ val databaseOrg          :String? = "basjes" // "Some org"
 val databaseBucket       :String? = "energy" // The influxDB commands call this the database, the V2 API calls it the bucket.
 val databaseMeasurement  :String? = "solar"  // Sometimes called the database table
 
-val connectionString = "modbus-tcp:tcp://$modbusIp:$modbusPort?unit-identifier=$modbusUnit"
+val connectionString = "modbus-tcp:tcp://$modbusIp:$modbusPort?default-unit-identifier=$modbusUnit"
 
 print("Modbus: Connecting...")
 ModbusDevicePlc4j(connectionString).use { modbusDevice ->

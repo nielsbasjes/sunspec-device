@@ -27,7 +27,6 @@ import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250608
-import nl.basjes.modbus.device.testcases.sunspec.DeviceSolarEdgeDated20191001
 import nl.basjes.modbus.device.testcases.sunspec.EmulatedDER
 import nl.basjes.modbus.schema.toTable
 import nl.basjes.sunspec.device.SunspecDevice.generate
@@ -37,37 +36,38 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 
 internal class TestSunspecDeviceGenerator {
+
+//    @Test
+//    fun checkSolarEdgeDump2019() {
+//        val device = DeviceSolarEdgeDated20191001.device
+//        device.logRequests = false
+//        dumpSunSpec(device)
+//    }
+
     @Test
-    fun checkSunSpecDump2023() {
+    fun checkSMASunnyBoyDump2023() {
         val device = DeviceSMASunnyBoy36Dated20230810.device
         device.logRequests = false
         dumpSunSpec(device)
     }
 
     @Test
-    fun checkSunSpecDump2025() {
-        val device = DeviceSMASunnyBoy36Dated20250518.device
-        device.logRequests = false
-        dumpSunSpec(device)
-    }
-
-    @Test
-    fun checkSunSpecDump2025Night() {
-        val device = DeviceSMASunnyBoy36Dated20250608.device
-        device.logRequests = false
-        dumpSunSpec(device)
-    }
-
-    @Test
-    fun checkSunSpecDumpOther() {
+    fun checkFimerPVSDump2024() {
         val device = DeviceFimerPVSDated20240722.device
         device.logRequests = false
         dumpSunSpec(device)
     }
 
     @Test
-    fun checkSolarEdgeDumpOther() {
-        val device = DeviceSolarEdgeDated20191001.device
+    fun checkSMASunnyBoyDump2025() {
+        val device = DeviceSMASunnyBoy36Dated20250518.device
+        device.logRequests = false
+        dumpSunSpec(device)
+    }
+
+    @Test
+    fun checkSMASunnyBoy2025Night() {
+        val device = DeviceSMASunnyBoy36Dated20250608.device
         device.logRequests = false
         dumpSunSpec(device)
     }
@@ -86,7 +86,7 @@ internal class TestSunspecDeviceGenerator {
     @Ignore("Requires real device")
     @Test
     fun showRealSunSpecDevicePlc4J() {
-        val connectionString = "modbus-tcp:tcp://$hostname:$port?unit-identifier=$unitId"
+        val connectionString = "modbus-tcp:tcp://$hostname:$port?default-unit-identifier=$unitId"
         println("Connection string: $connectionString")
         try {
             ModbusDevicePlc4j(connectionString).use { modbusDevice ->

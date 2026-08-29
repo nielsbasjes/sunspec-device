@@ -31,7 +31,7 @@ import nl.basjes.sunspec.device.SunspecDevice
 val modbusIp          = "sunspec.iot.basjes.nl"
 val modbusPort        = MODBUS_STANDARD_TCP_PORT
 val modbusUnit        = SUNSPEC_STANDARD_UNITID
-val connectionString  = "modbus-tcp:tcp://${modbusIp}:${modbusPort}?unit-identifier=${modbusUnit}"
+val connectionString  = "modbus-tcp:tcp://${modbusIp}:${modbusPort}?default-unit-identifier=${modbusUnit}"
 
 print("Modbus: Connecting...")
 ModbusDevicePlc4j(connectionString).use { modbusDevice ->

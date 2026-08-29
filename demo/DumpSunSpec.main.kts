@@ -59,7 +59,7 @@ fun main(vararg args: String) {
         return
     }
 
-    val connectionString = "modbus-tcp:tcp://${commandlineOptions.modbusIp}:${commandlineOptions.modbusPort}?unit-identifier=${commandlineOptions.modbusUnit}"
+    val connectionString = "modbus-tcp:tcp://${commandlineOptions.modbusIp}:${commandlineOptions.modbusPort}?default-unit-identifier=${commandlineOptions.modbusUnit}"
 
     print("Modbus: Connecting...")
     ModbusDevicePlc4j(connectionString).use { modbusDevice ->
