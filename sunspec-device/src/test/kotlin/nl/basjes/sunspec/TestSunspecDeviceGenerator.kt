@@ -16,56 +16,65 @@
  */
 package nl.basjes.sunspec
 
-import com.ghgande.j2mod.modbus.facade.AbstractModbusMaster
-import com.ghgande.j2mod.modbus.facade.ModbusTCPMaster
 import nl.basjes.modbus.device.api.MODBUS_STANDARD_TCP_PORT
 import nl.basjes.modbus.device.api.ModbusDevice
+import nl.basjes.modbus.device.api.ModbusDeviceTcpConfig
 import nl.basjes.modbus.device.exception.ModbusException
-import nl.basjes.modbus.device.j2mod.ModbusDeviceJ2Mod
-import nl.basjes.modbus.device.plc4j.ModbusDevicePlc4j
+import nl.basjes.modbus.device.j2mod.toModbusDeviceJ2Mod
+import nl.basjes.modbus.device.plc4j.toModbusDevicePlc4j
 import nl.basjes.modbus.device.testcases.sunspec.DeviceFimerPVSDated20240722
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20230810
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250518
 import nl.basjes.modbus.device.testcases.sunspec.DeviceSMASunnyBoy36Dated20250608
+import nl.basjes.modbus.device.testcases.sunspec.DeviceSolarEdgeDated20191001
 import nl.basjes.modbus.device.testcases.sunspec.EmulatedDER
 import nl.basjes.modbus.schema.toTable
 import nl.basjes.sunspec.device.SunspecDevice.generate
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.TestMethodOrder
 import kotlin.test.Ignore
 import kotlin.test.Test
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 internal class TestSunspecDeviceGenerator {
 
-//    @Test
-//    fun checkSolarEdgeDump2019() {
-//        val device = DeviceSolarEdgeDated20191001.device
-//        device.logRequests = false
-//        dumpSunSpec(device)
-//    }
+    @Test
+    @Order(2019)
+    fun checkSolarEdge2019() {
+        val device = DeviceSolarEdgeDated20191001.device
+        device.logRequests = false
+        dumpSunSpec(device)
+    }
 
     @Test
-    fun checkSMASunnyBoyDump2023() {
+    @Order(2023)
+    fun checkSMASunnyBoy2023() {
         val device = DeviceSMASunnyBoy36Dated20230810.device
         device.logRequests = false
         dumpSunSpec(device)
     }
 
     @Test
-    fun checkFimerPVSDump2024() {
+    @Order(2024)
+    fun checkFimerPVS2024() {
         val device = DeviceFimerPVSDated20240722.device
         device.logRequests = false
         dumpSunSpec(device)
     }
 
     @Test
-    fun checkSMASunnyBoyDump2025() {
+    @Order(20250)
+    fun checkSMASunnyBoy2025() {
         val device = DeviceSMASunnyBoy36Dated20250518.device
         device.logRequests = false
         dumpSunSpec(device)
     }
 
     @Test
+    @Order(20251)
     fun checkSMASunnyBoy2025Night() {
         val device = DeviceSMASunnyBoy36Dated20250608.device
         device.logRequests = false
@@ -73,7 +82,8 @@ internal class TestSunspecDeviceGenerator {
     }
 
     @Test
-    fun checkSunSpecDumpEmulatedDER() {
+    @Order(99999)
+    fun checkSunSpecEmulatedDER() {
         val device = EmulatedDER.device
         device.logRequests = true
         dumpSunSpec(device)
@@ -86,12 +96,12 @@ internal class TestSunspecDeviceGenerator {
     @Ignore("Requires real device")
     @Test
     fun showRealSunSpecDevicePlc4J() {
-        val connectionString = "modbus-tcp:tcp://$hostname:$port?default-unit-identifier=$unitId"
-        println("Connection string: $connectionString")
         try {
-            ModbusDevicePlc4j(connectionString).use { modbusDevice ->
-                dumpSunSpec(modbusDevice)
-            }
+            ModbusDeviceTcpConfig(hostname, port, unitId)
+                .toModbusDevicePlc4j()
+                .use {
+                    dumpSunSpec(it)
+                }
         } catch (e: Exception) {
             throw ModbusException("Unable to connect to the master", e)
         }
@@ -100,12 +110,12 @@ internal class TestSunspecDeviceGenerator {
     @Ignore("Requires real device")
     @Test
     fun showRealSunSpecDeviceJ2Mod() {
-        val master: AbstractModbusMaster = ModbusTCPMaster(hostname, port)
         try {
-            master.connect()
-            ModbusDeviceJ2Mod(master, unitId).use { modbusDevice ->
-                dumpSunSpec(modbusDevice)
-            }
+            ModbusDeviceTcpConfig(hostname, port, unitId)
+                .toModbusDeviceJ2Mod()
+                .use {
+                    dumpSunSpec(it)
+                }
         } catch (e: Exception) {
             throw ModbusException("Unable to connect to the master", e)
         }
