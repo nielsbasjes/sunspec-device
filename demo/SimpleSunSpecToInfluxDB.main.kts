@@ -23,7 +23,7 @@
 @file:DependsOn("nl.basjes.modbus:modbus-api-plc4j:0.15.0")
 @file:DependsOn("com.influxdb:influxdb-client-java:8.0.0")
 @file:DependsOn("org.apache.logging.log4j:log4j-to-slf4j:2.26.1")
-@file:DependsOn("org.slf4j:slf4j-simple:2.0.18")
+@file:DependsOn("org.slf4j:slf4j-simple:2.0.19")
 
 import com.influxdb.client.InfluxDBClientFactory
 import com.influxdb.client.WriteApiBlocking
